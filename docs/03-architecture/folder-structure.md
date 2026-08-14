@@ -9,3 +9,4 @@ types/
 schemas/
 docs/
 public/
+```

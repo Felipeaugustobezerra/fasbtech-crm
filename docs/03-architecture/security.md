@@ -1,8 +1,3 @@
-
-## `security.md`
-
-
-```markdown
 # Segurança
 
 - Não expor chaves secretas no frontend.
