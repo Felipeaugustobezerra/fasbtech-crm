@@ -331,8 +331,8 @@ select is(
     select count(*)
     from public.profiles
   ),
-  1::bigint,
-  'OWNER deve visualizar somente o próprio Profile na Foundation'
+  3::bigint,
+  'OWNER deve visualizar Profiles dos utilizadores vinculados à própria Organization na Sprint 02'
 );
 
 
@@ -351,8 +351,8 @@ select is(
     select count(*)
     from public.organization_members
   ),
-  1::bigint,
-  'OWNER deve visualizar apenas o próprio Membership na Foundation'
+  3::bigint,
+  'OWNER deve visualizar Memberships da própria Organization na Sprint 02'
 );
 
 

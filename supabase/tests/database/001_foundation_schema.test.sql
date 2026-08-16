@@ -1,19 +1,24 @@
 begin;
 
+
 -- ============================================================
 -- FASBtech CRM
 -- Migration 001 — Foundation
 -- Structural tests
 -- ============================================================
 
+
 create extension if not exists pgtap with schema extensions;
 
-select plan(25);
+
+select plan(23);
+
 
 
 -- ============================================================
 -- 1. TABELAS DA FOUNDATION
 -- ============================================================
+
 
 select has_table(
   'public',
@@ -21,17 +26,20 @@ select has_table(
   'public.profiles deve existir'
 );
 
+
 select has_table(
   'public',
   'organizations',
   'public.organizations deve existir'
 );
 
+
 select has_table(
   'public',
   'organization_members',
   'public.organization_members deve existir'
 );
+
 
 select has_table(
   'public',
@@ -40,45 +48,43 @@ select has_table(
 );
 
 
+
 -- ============================================================
--- 2. TABELAS FUTURAS NÃO DEVEM EXISTIR
+-- 2. TABELAS AINDA FORA DO MVP ATUAL NÃO DEVEM EXISTIR
 -- ============================================================
 
-select hasnt_table(
-  'public',
-  'clients',
-  'clients não deve existir na Migration 001'
-);
+-- clients e client_assignments deixaram de ser "futuras" após a
+-- Migration da Sprint 02. A estrutura delas é validada em
+-- 005_clients_schema.test.sql.
 
-select hasnt_table(
-  'public',
-  'client_assignments',
-  'client_assignments não deve existir na Migration 001'
-);
 
 select hasnt_table(
   'public',
   'demands',
-  'demands não deve existir na Migration 001'
+  'demands ainda não deve existir nesta etapa'
 );
+
 
 select hasnt_table(
   'public',
   'financial_entries',
-  'financial_entries não deve existir na Migration 001'
+  'financial_entries ainda não deve existir nesta etapa'
 );
+
 
 select hasnt_table(
   'public',
   'contracts',
-  'contracts não deve existir na Migration 001'
+  'contracts ainda não deve existir nesta etapa'
 );
+
 
 select hasnt_table(
   'public',
   'documents',
-  'documents não deve existir na Migration 001'
+  'documents ainda não deve existir nesta etapa'
 );
+
 
 select hasnt_table(
   'public',
@@ -87,9 +93,11 @@ select hasnt_table(
 );
 
 
+
 -- ============================================================
 -- 3. PRIMARY KEYS
 -- ============================================================
+
 
 select col_is_pk(
   'public',
@@ -98,6 +106,7 @@ select col_is_pk(
   'profiles.id deve ser Primary Key'
 );
 
+
 select col_is_pk(
   'public',
   'organizations',
@@ -105,12 +114,14 @@ select col_is_pk(
   'organizations.id deve ser Primary Key'
 );
 
+
 select col_is_pk(
   'public',
   'organization_members',
   'id',
   'organization_members.id deve ser Primary Key'
 );
+
 
 select col_is_pk(
   'public',
@@ -120,9 +131,11 @@ select col_is_pk(
 );
 
 
+
 -- ============================================================
 -- 4. RLS
 -- ============================================================
+
 
 select ok(
   (
@@ -136,6 +149,7 @@ select ok(
   'RLS deve estar habilitada em profiles'
 );
 
+
 select ok(
   (
     select c.relrowsecurity
@@ -148,6 +162,7 @@ select ok(
   'RLS deve estar habilitada em organizations'
 );
 
+
 select ok(
   (
     select c.relrowsecurity
@@ -159,6 +174,7 @@ select ok(
   ),
   'RLS deve estar habilitada em organization_members'
 );
+
 
 select ok(
   (
@@ -173,9 +189,11 @@ select ok(
 );
 
 
+
 -- ============================================================
 -- 5. MEMBERSHIP ÚNICO
 -- ============================================================
+
 
 select ok(
   exists (
@@ -189,9 +207,11 @@ select ok(
 );
 
 
+
 -- ============================================================
 -- 6. BOOTSTRAP
 -- ============================================================
+
 
 select has_function(
   'public',
@@ -199,6 +219,7 @@ select has_function(
   array[]::text[],
   'bootstrap_initial_organization() deve existir'
 );
+
 
 
 select ok(
@@ -215,9 +236,11 @@ select ok(
 );
 
 
+
 -- ============================================================
 -- 7. UPDATED_AT
 -- ============================================================
+
 
 select has_function(
   'private',
@@ -227,9 +250,11 @@ select has_function(
 );
 
 
+
 -- ============================================================
 -- 8. ACTIVITY LOGS IMUTÁVEIS
 -- ============================================================
+
 
 select hasnt_column(
   'public',
@@ -237,6 +262,7 @@ select hasnt_column(
   'updated_at',
   'activity_logs não deve possuir updated_at'
 );
+
 
 select hasnt_column(
   'public',
@@ -246,10 +272,13 @@ select hasnt_column(
 );
 
 
+
 -- ============================================================
 -- FINALIZAÇÃO
 -- ============================================================
 
+
 select * from finish();
+
 
 rollback;
