@@ -6,6 +6,14 @@ import {
   getOwnProfile,
 } from "./foundation.queries";
 
+type FoundationRole = "OWNER" | "ADMIN" | "MEMBER";
+
+type Membership = Awaited<ReturnType<typeof getOwnMemberships>>[number];
+
+type ReadyMembership = Omit<Membership, "role"> & {
+  role: FoundationRole;
+};
+
 type FoundationContext =
   | {
       status: "UNAUTHENTICATED";
@@ -14,7 +22,7 @@ type FoundationContext =
       status: "READY";
       userEmail?: string;
       profile: NonNullable<Awaited<ReturnType<typeof getOwnProfile>>>;
-      membership: Awaited<ReturnType<typeof getOwnMemberships>>[number];
+      membership: ReadyMembership;
       organization: NonNullable<
         Awaited<ReturnType<typeof getOrganizationById>>
       >;
@@ -33,6 +41,10 @@ type FoundationContext =
         | "ORGANIZATION_INACTIVE"
         | "INVALID_FOUNDATION_STATE";
     };
+
+function isFoundationRole(role: string): role is FoundationRole {
+  return role === "OWNER" || role === "ADMIN" || role === "MEMBER";
+}
 
 export async function resolveFoundationContext(): Promise<FoundationContext> {
   const supabase = await createClient();
@@ -127,6 +139,14 @@ export async function resolveFoundationContext(): Promise<FoundationContext> {
     };
   }
 
+  if (!isFoundationRole(membership.role)) {
+    return {
+      status: "ACCESS_DENIED",
+      userEmail,
+      reason: "INVALID_FOUNDATION_STATE",
+    };
+  }
+
   const organization = await getOrganizationById(
     supabase,
     membership.organization_id,
@@ -148,11 +168,16 @@ export async function resolveFoundationContext(): Promise<FoundationContext> {
     };
   }
 
+  const readyMembership: ReadyMembership = {
+    ...membership,
+    role: membership.role,
+  };
+
   return {
     status: "READY",
     userEmail,
     profile,
-    membership,
+    membership: readyMembership,
     organization,
   };
 }

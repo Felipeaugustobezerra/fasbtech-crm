@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 
 import { logout } from "./actions";
-import { resolveFoundationContext } from "@/services/foundation/foundation.service";
+
 import { AppShell } from "@/components/app-shell";
+import { resolveFoundationContext } from "@/services/foundation/foundation.service";
 
 export default async function PrivateLayout({
   children,
@@ -35,7 +36,7 @@ export default async function PrivateLayout({
           <form action={logout} className="mt-6">
             <button
               type="submit"
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700"
+              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
               Sair
             </button>
@@ -60,7 +61,7 @@ export default async function PrivateLayout({
           <form action={logout} className="mt-6">
             <button
               type="submit"
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700"
+              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
             >
               Sair
             </button>
@@ -70,5 +71,14 @@ export default async function PrivateLayout({
     );
   }
 
-  return <AppShell userEmail={context.userEmail}>{children}</AppShell>;
+  return (
+    <AppShell
+      userEmail={context.userEmail}
+      fullName={context.profile.full_name}
+      organizationName={context.organization.name}
+      role={context.membership.role}
+    >
+      {children}
+    </AppShell>
+  );
 }
