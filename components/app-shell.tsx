@@ -36,7 +36,7 @@ const navigation = [
   {
     label: "Clientes",
     href: "/clientes",
-    enabled: false,
+    enabled: true,
   },
   {
     label: "Acessos",
@@ -75,7 +75,7 @@ function NavigationItems() {
           <Link
             key={item.label}
             href={item.href}
-            className="flex items-center rounded-lg bg-slate-800 px-3 py-2.5 text-sm font-medium text-white transition hover:bg-slate-700"
+            className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
           >
             {item.label}
           </Link>
