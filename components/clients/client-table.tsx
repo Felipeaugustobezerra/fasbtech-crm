@@ -77,9 +77,7 @@ export function ClientTable({
   clearSearchHref,
 }: ClientTableProps) {
   if (clients.length === 0) {
-    return (
-      <EmptyClients search={search} clearSearchHref={clearSearchHref} />
-    );
+    return <EmptyClients search={search} clearSearchHref={clearSearchHref} />;
   }
 
   return (
@@ -128,7 +126,12 @@ export function ClientTable({
                   scope="row"
                   className="h-13 px-6 text-sm font-semibold text-slate-950"
                 >
-                  {client.name}
+                  <Link
+                    href={`/clientes/${client.id}`}
+                    className="rounded-sm text-blue-800 transition hover:text-blue-900 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+                  >
+                    {client.name}
+                  </Link>
                 </th>
                 <td className="h-13 px-6 text-sm text-slate-600">
                   {client.company_name ?? "—"}

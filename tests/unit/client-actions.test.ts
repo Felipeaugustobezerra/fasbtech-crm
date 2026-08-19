@@ -10,7 +10,12 @@ import type { ClientInput } from "@/schemas/client";
 const mocks = vi.hoisted(() => ({
   archiveClient: vi.fn(),
   createClient: vi.fn(),
+  revalidatePath: vi.fn(),
   updateClient: vi.fn(),
+}));
+
+vi.mock("next/cache", () => ({
+  revalidatePath: mocks.revalidatePath,
 }));
 
 vi.mock("@/services/clients/client.service", () => ({
@@ -32,6 +37,7 @@ describe("client actions", () => {
   beforeEach(() => {
     mocks.archiveClient.mockReset();
     mocks.createClient.mockReset();
+    mocks.revalidatePath.mockReset();
     mocks.updateClient.mockReset();
   });
 
@@ -50,6 +56,7 @@ describe("client actions", () => {
       phone: undefined,
     });
     expect(result).toEqual({ success: true, clientId });
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/clientes");
   });
 
   it("does not call the create service when input is invalid", async () => {
@@ -100,6 +107,11 @@ describe("client actions", () => {
       company_name: undefined,
     });
     expect(result).toEqual({ success: true, clientId });
+    expect(mocks.revalidatePath).toHaveBeenNthCalledWith(1, "/clientes");
+    expect(mocks.revalidatePath).toHaveBeenNthCalledWith(
+      2,
+      `/clientes/${clientId}`,
+    );
   });
 
   it("does not call the update service when input is invalid", async () => {
@@ -125,6 +137,11 @@ describe("client actions", () => {
 
     expect(mocks.archiveClient).toHaveBeenCalledWith(clientId);
     expect(result).toEqual({ success: true, clientId });
+    expect(mocks.revalidatePath).toHaveBeenNthCalledWith(1, "/clientes");
+    expect(mocks.revalidatePath).toHaveBeenNthCalledWith(
+      2,
+      `/clientes/${clientId}`,
+    );
   });
 
   it("does not call a service when clientId is not a valid UUID", async () => {

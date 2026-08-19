@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export const clientIdSchema = z.uuid("Informe um Cliente válido.");
+
 const optionalTrimmedStringSchema = z
   .string()
   .trim()

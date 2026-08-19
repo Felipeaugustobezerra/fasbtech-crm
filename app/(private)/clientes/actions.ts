@@ -1,15 +1,18 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { clientSchema, type ClientInput } from "@/schemas/client";
+import {
+  clientIdSchema,
+  clientSchema,
+  type ClientInput,
+} from "@/schemas/client";
 import {
   archiveClient,
   createClient,
   updateClient,
 } from "@/services/clients/client.service";
-
-const clientIdSchema = z.uuid("Informe um Cliente válido.");
 
 type ClientActionFieldErrors = Partial<
   Record<keyof ClientInput | "clientId", string[]>
@@ -72,6 +75,8 @@ export async function createClientAction(
   try {
     const clientId = await createClient(parsedInput.data);
 
+    revalidatePath("/clientes");
+
     return { success: true, clientId };
   } catch {
     return {
@@ -104,6 +109,9 @@ export async function updateClientAction(
       parsedInput.data,
     );
 
+    revalidatePath("/clientes");
+    revalidatePath(`/clientes/${updatedClientId}`);
+
     return { success: true, clientId: updatedClientId };
   } catch {
     return {
@@ -125,6 +133,9 @@ export async function archiveClientAction(
 
   try {
     const archivedClientId = await archiveClient(parsedClientId.data);
+
+    revalidatePath("/clientes");
+    revalidatePath(`/clientes/${archivedClientId}`);
 
     return { success: true, clientId: archivedClientId };
   } catch {
