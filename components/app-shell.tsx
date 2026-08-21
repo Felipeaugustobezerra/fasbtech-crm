@@ -41,7 +41,7 @@ const navigation = [
   {
     label: "Acessos",
     href: "/acessos",
-    enabled: false,
+    enabled: true,
   },
 ] as const;
 
