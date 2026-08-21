@@ -7,17 +7,30 @@ import type { Client } from "@/types/client";
 
 const mocks = vi.hoisted(() => ({
   getClientById: vi.fn(),
+  listClientAccesses: vi.fn(),
+  listOrganizationMembers: vi.fn(),
   notFound: vi.fn(),
   push: vi.fn(),
+  refresh: vi.fn(),
+  resolveFoundationContext: vi.fn(),
 }));
 
 vi.mock("@/lib/clients/queries", () => ({
   getClientById: mocks.getClientById,
 }));
 
+vi.mock("@/lib/access/queries", () => ({
+  listClientAccesses: mocks.listClientAccesses,
+  listOrganizationMembers: mocks.listOrganizationMembers,
+}));
+
+vi.mock("@/services/foundation/foundation.service", () => ({
+  resolveFoundationContext: mocks.resolveFoundationContext,
+}));
+
 vi.mock("next/navigation", () => ({
   notFound: mocks.notFound,
-  useRouter: () => ({ push: mocks.push }),
+  useRouter: () => ({ push: mocks.push, refresh: mocks.refresh }),
 }));
 
 const client: Client = {
@@ -46,8 +59,17 @@ const client: Client = {
 describe("client details UI", () => {
   beforeEach(() => {
     mocks.getClientById.mockReset();
+    mocks.listClientAccesses.mockReset();
+    mocks.listOrganizationMembers.mockReset();
     mocks.notFound.mockReset();
     mocks.push.mockReset();
+    mocks.refresh.mockReset();
+    mocks.resolveFoundationContext.mockReset();
+    mocks.listClientAccesses.mockResolvedValue([]);
+    mocks.resolveFoundationContext.mockResolvedValue({
+      status: "READY",
+      membership: { role: "MEMBER" },
+    });
     mocks.notFound.mockImplementation(() => {
       throw new Error("NEXT_NOT_FOUND");
     });
@@ -85,7 +107,12 @@ describe("client details UI", () => {
     expect(
       screen.getByRole("link", { name: "Editar Cliente" }),
     ).toHaveAttribute("href", `/clientes/${client.id}/editar`);
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Acessos ao Cliente" }),
+    ).toBeInTheDocument();
     expect(mocks.getClientById).toHaveBeenCalledWith(client.id);
+    expect(mocks.listClientAccesses).toHaveBeenCalledWith(client.id);
+    expect(mocks.listOrganizationMembers).not.toHaveBeenCalled();
   });
 
   it("uses not-found when the client is absent or hidden by RLS", async () => {
@@ -96,6 +123,8 @@ describe("client details UI", () => {
     ).rejects.toThrow("NEXT_NOT_FOUND");
 
     expect(mocks.getClientById).toHaveBeenCalledWith(client.id);
+    expect(mocks.listClientAccesses).not.toHaveBeenCalled();
+    expect(mocks.listOrganizationMembers).not.toHaveBeenCalled();
     expect(mocks.notFound).toHaveBeenCalledOnce();
   });
 
@@ -105,6 +134,8 @@ describe("client details UI", () => {
     ).rejects.toThrow("NEXT_NOT_FOUND");
 
     expect(mocks.getClientById).not.toHaveBeenCalled();
+    expect(mocks.resolveFoundationContext).not.toHaveBeenCalled();
+    expect(mocks.listClientAccesses).not.toHaveBeenCalled();
     expect(mocks.notFound).toHaveBeenCalledOnce();
   });
 });

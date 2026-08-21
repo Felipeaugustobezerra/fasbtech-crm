@@ -1,10 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { ClientAccessSection } from "@/components/access/client-access-section";
 import { ClientArchive } from "@/components/clients/client-archive";
 import { ClientDetails } from "@/components/clients/client-details";
+import {
+  listClientAccesses,
+  listOrganizationMembers,
+} from "@/lib/access/queries";
 import { getClientById } from "@/lib/clients/queries";
 import { clientIdSchema } from "@/schemas/client";
+import { resolveFoundationContext } from "@/services/foundation/foundation.service";
 
 type ClientDetailsPageProps = Readonly<{
   params: Promise<{ id: string }>;
@@ -20,11 +26,32 @@ export default async function ClientDetailsPage({
     notFound();
   }
 
-  const client = await getClientById(parsedClientId.data);
+  const [client, context] = await Promise.all([
+    getClientById(parsedClientId.data),
+    resolveFoundationContext(),
+  ]);
 
   if (!client) {
     notFound();
   }
+
+  const canManageClientAccess =
+    context.status === "READY" && context.membership.role === "OWNER";
+  const [clientAccesses, organizationMembers] = await Promise.all([
+    listClientAccesses(client.id),
+    canManageClientAccess ? listOrganizationMembers() : Promise.resolve([]),
+  ]);
+  const assignedMembershipIds = new Set(
+    clientAccesses.map((access) => access.membershipId),
+  );
+  const eligibleMembers = organizationMembers
+    .filter(
+      (membership) =>
+        membership.role === "MEMBER" &&
+        membership.status === "ACTIVE" &&
+        !assignedMembershipIds.has(membership.membershipId),
+    )
+    .map(({ membershipId, fullName }) => ({ membershipId, fullName }));
 
   return (
     <section
@@ -88,6 +115,13 @@ export default async function ClientDetailsPage({
 
       <div className="mt-8 space-y-6">
         <ClientDetails client={client} />
+
+        <ClientAccessSection
+          clientId={client.id}
+          accesses={clientAccesses}
+          canManageClientAccess={canManageClientAccess}
+          candidates={eligibleMembers}
+        />
 
         {client.archived_at ? null : (
           <ClientArchive clientId={client.id} clientName={client.name} />
