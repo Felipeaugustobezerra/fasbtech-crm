@@ -16,6 +16,7 @@ const mocks = vi.hoisted(() => ({
   assignClientAccessAction: vi.fn(),
   getClientById: vi.fn(),
   listClientAccesses: vi.fn(),
+  listClientActivities: vi.fn(),
   listOrganizationMembers: vi.fn(),
   notFound: vi.fn(),
   refresh: vi.fn(),
@@ -36,6 +37,10 @@ vi.mock("@/app/(private)/acessos/actions", () => ({
 vi.mock("@/lib/access/queries", () => ({
   listClientAccesses: mocks.listClientAccesses,
   listOrganizationMembers: mocks.listOrganizationMembers,
+}));
+
+vi.mock("@/lib/activity/queries", () => ({
+  listClientActivities: mocks.listClientActivities,
 }));
 
 vi.mock("@/lib/clients/queries", () => ({
@@ -119,6 +124,7 @@ describe("client access UI", () => {
     mocks.assignClientAccessAction.mockReset();
     mocks.getClientById.mockReset();
     mocks.listClientAccesses.mockReset();
+    mocks.listClientActivities.mockReset();
     mocks.listOrganizationMembers.mockReset();
     mocks.notFound.mockReset();
     mocks.refresh.mockReset();
@@ -126,6 +132,7 @@ describe("client access UI", () => {
     mocks.resolveFoundationContext.mockReset();
     mocks.getClientById.mockResolvedValue(client);
     mocks.listClientAccesses.mockResolvedValue([access]);
+    mocks.listClientActivities.mockResolvedValue([]);
     mocks.resolveFoundationContext.mockResolvedValue(readyContext("MEMBER"));
     mocks.notFound.mockImplementation(() => {
       throw new Error("NEXT_NOT_FOUND");
@@ -235,6 +242,7 @@ describe("client access UI", () => {
 
     expect(mocks.notFound).toHaveBeenCalledOnce();
     expect(mocks.listClientAccesses).not.toHaveBeenCalled();
+    expect(mocks.listClientActivities).not.toHaveBeenCalled();
     expect(mocks.listOrganizationMembers).not.toHaveBeenCalled();
   });
 

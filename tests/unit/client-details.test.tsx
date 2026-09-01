@@ -8,6 +8,7 @@ import type { Client } from "@/types/client";
 const mocks = vi.hoisted(() => ({
   getClientById: vi.fn(),
   listClientAccesses: vi.fn(),
+  listClientActivities: vi.fn(),
   listOrganizationMembers: vi.fn(),
   notFound: vi.fn(),
   push: vi.fn(),
@@ -22,6 +23,10 @@ vi.mock("@/lib/clients/queries", () => ({
 vi.mock("@/lib/access/queries", () => ({
   listClientAccesses: mocks.listClientAccesses,
   listOrganizationMembers: mocks.listOrganizationMembers,
+}));
+
+vi.mock("@/lib/activity/queries", () => ({
+  listClientActivities: mocks.listClientActivities,
 }));
 
 vi.mock("@/services/foundation/foundation.service", () => ({
@@ -60,12 +65,15 @@ describe("client details UI", () => {
   beforeEach(() => {
     mocks.getClientById.mockReset();
     mocks.listClientAccesses.mockReset();
+    mocks.listClientActivities.mockReset();
     mocks.listOrganizationMembers.mockReset();
     mocks.notFound.mockReset();
     mocks.push.mockReset();
     mocks.refresh.mockReset();
     mocks.resolveFoundationContext.mockReset();
     mocks.listClientAccesses.mockResolvedValue([]);
+    mocks.listClientActivities.mockResolvedValue([]);
+    mocks.listOrganizationMembers.mockResolvedValue([]);
     mocks.resolveFoundationContext.mockResolvedValue({
       status: "READY",
       membership: { role: "MEMBER" },
@@ -112,8 +120,34 @@ describe("client details UI", () => {
     ).toBeInTheDocument();
     expect(mocks.getClientById).toHaveBeenCalledWith(client.id);
     expect(mocks.listClientAccesses).toHaveBeenCalledWith(client.id);
+    expect(mocks.listClientActivities).toHaveBeenCalledWith(client.id);
     expect(mocks.listOrganizationMembers).not.toHaveBeenCalled();
   });
+
+  it.each(["MEMBER", "OWNER"] as const)(
+    "renders the exact activity returned by RLS without a %s filter",
+    async (role) => {
+      mocks.getClientById.mockResolvedValue(client);
+      mocks.resolveFoundationContext.mockResolvedValue({
+        status: "READY",
+        membership: { role },
+      });
+      mocks.listClientActivities.mockResolvedValue([
+        {
+          action: "ACCESS_GRANTED",
+          createdAt: "2026-08-20T12:34:00.000Z",
+        },
+      ]);
+
+      const page = await ClientDetailsPage({
+        params: Promise.resolve({ id: client.id }),
+      });
+      render(page);
+
+      expect(screen.getByText("Acesso concedido")).toBeVisible();
+      expect(mocks.listClientActivities).toHaveBeenCalledWith(client.id);
+    },
+  );
 
   it("uses not-found when the client is absent or hidden by RLS", async () => {
     mocks.getClientById.mockResolvedValue(null);
@@ -124,6 +158,7 @@ describe("client details UI", () => {
 
     expect(mocks.getClientById).toHaveBeenCalledWith(client.id);
     expect(mocks.listClientAccesses).not.toHaveBeenCalled();
+    expect(mocks.listClientActivities).not.toHaveBeenCalled();
     expect(mocks.listOrganizationMembers).not.toHaveBeenCalled();
     expect(mocks.notFound).toHaveBeenCalledOnce();
   });
@@ -136,6 +171,7 @@ describe("client details UI", () => {
     expect(mocks.getClientById).not.toHaveBeenCalled();
     expect(mocks.resolveFoundationContext).not.toHaveBeenCalled();
     expect(mocks.listClientAccesses).not.toHaveBeenCalled();
+    expect(mocks.listClientActivities).not.toHaveBeenCalled();
     expect(mocks.notFound).toHaveBeenCalledOnce();
   });
 });

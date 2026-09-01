@@ -2,12 +2,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ClientAccessSection } from "@/components/access/client-access-section";
+import { ClientActivityList } from "@/components/activity/client-activity-list";
 import { ClientArchive } from "@/components/clients/client-archive";
 import { ClientDetails } from "@/components/clients/client-details";
 import {
   listClientAccesses,
   listOrganizationMembers,
 } from "@/lib/access/queries";
+import { listClientActivities } from "@/lib/activity/queries";
 import { getClientById } from "@/lib/clients/queries";
 import { clientIdSchema } from "@/schemas/client";
 import { resolveFoundationContext } from "@/services/foundation/foundation.service";
@@ -37,10 +39,12 @@ export default async function ClientDetailsPage({
 
   const canManageClientAccess =
     context.status === "READY" && context.membership.role === "OWNER";
-  const [clientAccesses, organizationMembers] = await Promise.all([
-    listClientAccesses(client.id),
-    canManageClientAccess ? listOrganizationMembers() : Promise.resolve([]),
-  ]);
+  const [clientAccesses, clientActivities, organizationMembers] =
+    await Promise.all([
+      listClientAccesses(client.id),
+      listClientActivities(client.id),
+      canManageClientAccess ? listOrganizationMembers() : Promise.resolve([]),
+    ]);
   const assignedMembershipIds = new Set(
     clientAccesses.map((access) => access.membershipId),
   );
@@ -122,6 +126,8 @@ export default async function ClientDetailsPage({
           canManageClientAccess={canManageClientAccess}
           candidates={eligibleMembers}
         />
+
+        <ClientActivityList activities={clientActivities} />
 
         {client.archived_at ? null : (
           <ClientArchive clientId={client.id} clientName={client.name} />
