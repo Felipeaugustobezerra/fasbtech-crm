@@ -8,7 +8,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(35);
+select plan(37);
 
 
 -- ============================================================
@@ -350,6 +350,16 @@ select is(
 -- 8. MEMBER NÃO PODE ADMINISTRAR CLIENTES
 -- ============================================================
 
+create temporary table test_client_context (
+  client_id uuid not null
+) on commit drop;
+
+insert into test_client_context (client_id)
+select id
+from public.clients
+where name = 'Client One Updated';
+
+
 set local request.jwt.claim.sub =
   '22222222-2222-4222-8222-222222222222';
 
@@ -363,6 +373,35 @@ select throws_ok(
   'P0001',
   'AUTHORIZATION_DENIED',
   'MEMBER não pode criar Cliente'
+);
+
+select throws_ok(
+  $$
+    select public.update_client(
+      p_client_id := (
+        select client_id
+        from test_client_context
+      ),
+      p_name := 'Unauthorized Client Update'
+    )
+  $$,
+  'P0001',
+  'CLIENT_NOT_FOUND_OR_FORBIDDEN',
+  'MEMBER não pode editar Cliente via RPC'
+);
+
+select throws_ok(
+  $$
+    select public.archive_client(
+      (
+        select client_id
+        from test_client_context
+      )
+    )
+  $$,
+  'P0001',
+  'CLIENT_NOT_FOUND_OR_FORBIDDEN',
+  'MEMBER não pode arquivar Cliente via RPC'
 );
 
 
