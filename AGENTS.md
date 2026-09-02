@@ -160,15 +160,18 @@ Não antecipar módulos de Sprints futuras.
 
 ---
 
-# Sprint Atual
-
-A Sprint atual é:
+# Estado das Sprints
 
 ```text
-Sprint 01 — Foundation
+Sprint 02 — Clientes & Acessos
+Status: Concluída
+
+Próxima Sprint:
+Sprint 03 — Demandas
+Status: Não iniciada
 ```
 
-A Foundation deverá ser concluída e validada antes do início da Sprint 02.
+A Foundation foi concluída na Sprint 01.
 
 ---
 

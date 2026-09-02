@@ -1261,30 +1261,19 @@ Garantir, conforme aplicável:
 
 ---
 
-# Sprint Atual
-
-A Sprint atual é:
+# Estado das Sprints
 
 ```text
 Sprint 01 — Foundation
+Status: Concluída
+
+Sprint 02 — Clientes & Acessos
+Status: Concluída
+
+Próxima Sprint:
+Sprint 03 — Demandas
+Status: Não iniciada
 ```
-
-Implementar somente o necessário para:
-
-- Auth;
-- Profile;
-- Organization;
-- Membership;
-- Roles;
-- Bootstrap;
-- RLS base;
-- Policies;
-- Activity Logs;
-- Storage privado base;
-- AppShell;
-- menu v3.0;
-- Dashboard inicial;
-- testes correspondentes.
 
 ---
 
@@ -1310,13 +1299,11 @@ A Foundation possui somente as entidades definidas no documento oficial da Migra
 
 ---
 
-# Sprints Futuras
+# Próxima Sprint e Sprints Futuras
 
 Não criar implementação antecipada para:
 
 ```text
-Sprint 02 — Clientes & Acessos
-
 Sprint 03 — Demandas
 
 Sprint 04 — Financeiro

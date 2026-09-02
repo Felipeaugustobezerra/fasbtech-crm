@@ -14,13 +14,13 @@ FASBtech CRM
 
 ## Status
 
-🟡 Planejada
+🟢 Concluída
 
 ---
 
 ## Última atualização
 
-Agosto de 2026
+Setembro de 2026
 
 ---
 
@@ -2359,13 +2359,43 @@ Todo código desta Sprint deverá:
 
 # Resultado
 
-> Preencher ao final da Sprint.
+A Sprint 02 foi concluída com o escopo de Clientes & Acessos entregue.
+
+## Entregas Finais
+
+- Clients com listagem, detalhe, criação, edição e archive, incluindo pesquisa, ordenação, paginação e estados de loading/error;
+- gestão de Memberships internas com roles `OWNER`, `ADMIN` e `MEMBER`;
+- administração e `/acessos` restritos a `OWNER`, sem inferir permissões globais para `ADMIN`;
+- Client Assignments com grant e remove de acesso;
+- acesso de `MEMBER` limitado aos Clientes atribuídos, com negação após a remoção do Assignment;
+- Activity Logs, RLS e RPCs para as operações protegidas;
+- proteção concorrente contra demotion do último `OWNER`;
+- testes de concorrência e E2E crítico de Clientes & Acessos.
+
+Client Assignment não concede automaticamente acesso a Financeiro ou Contratos.
+
+Archive preserva o histórico do Cliente e não realiza delete físico.
+
+## Validação Final
+
+- Database: 8 arquivos pgTAP / 197 testes / 0 failures;
+- integração `owner-role-concurrency`: aprovada;
+- Unit: 18 arquivos / 158 testes aprovados;
+- E2E: 2 specs / 4 testes aprovados / 0 skipped;
+- E2E executado duas vezes consecutivas com sucesso;
+- lint, typecheck, diff-check e build: aprovados.
 
 ---
 
 # Lições Aprendidas
 
-> Preencher ao final da Sprint.
+- A autorização deve existir no banco/backend; a UI apenas reflete as permissões efetivas.
+- Guards administrativos devem ocorrer antes de queries sensíveis.
+- O último `OWNER` exige proteção concorrente, não apenas uma contagem simples.
+- Testes de segurança devem provar happy path e denied path.
+- E2E destrutivo deve possuir guard explícito `LOCAL ONLY` antes de reset ou mutations privilegiadas.
+- Lifecycle E2E stateful deve executar em série, mesmo com `fullyParallel` habilitado no Playwright.
+- O acesso de `MEMBER` deve ser comprovado após grant e negado após remove.
 
 ---
 
@@ -2407,8 +2437,9 @@ Clientes são a entidade operacional central.
 
 Acessos estabelecem a autorização por Cliente necessária para os módulos posteriores.
 
-Após a conclusão desta Sprint, o próximo módulo será:
+Próxima Sprint:
 
 ```
 Sprint 03 — Demandas
+Status: Não iniciada
 ```

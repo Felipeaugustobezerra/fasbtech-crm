@@ -252,7 +252,6 @@ ORGANIZATION
 PROFILE
 MEMBERSHIP
 CLIENT
-CLIENT_ASSIGNMENT
 DEMAND
 FINANCIAL_ENTRY
 FINANCIAL_GOAL
@@ -344,9 +343,9 @@ CREATED
 UPDATED
 ARCHIVED
 STATUS_CHANGED
-ASSIGNED
-UNASSIGNED
-ROLE_CHANGED
+ACCESS_GRANTED
+ACCESS_REVOKED
+ROLE_UPDATED
 SENT
 GENERATED
 SIGNED
@@ -837,14 +836,14 @@ Utilizador removido de Cliente
 Representação:
 
 ```text
-entity_type = CLIENT_ASSIGNMENT
+entity_type = CLIENT
 ```
 
 Actions aplicáveis:
 
 ```text
-ASSIGNED
-UNASSIGNED
+ACCESS_GRANTED
+ACCESS_REVOKED
 ```
 
 ---
@@ -853,20 +852,24 @@ UNASSIGNED
 
 Alterações relevantes em utilizadores internos deverão ser auditadas quando implementadas.
 
-Exemplos:
+Eventos implementados:
 
 ```text
+Membership criada
 Role alterada
-
-Membership suspenso
-
-Membership reativado
 ```
 
 Representação:
 
 ```text
 entity_type = MEMBERSHIP
+```
+
+Actions aplicáveis:
+
+```text
+CREATED
+ROLE_UPDATED
 ```
 
 ---
@@ -887,15 +890,15 @@ Exemplo:
 
 ```text
 entity_type = MEMBERSHIP
-action      = ROLE_CHANGED
+action      = ROLE_UPDATED
 ```
 
 Metadata poderá registrar:
 
 ```json
 {
-  "old": "MEMBER",
-  "new": "ADMIN"
+  "old_role": "MEMBER",
+  "new_role": "ADMIN"
 }
 ```
 
@@ -1031,7 +1034,6 @@ Organization
     └── Activity Logs
             │
             ├── CLIENT
-            ├── CLIENT_ASSIGNMENT
             ├── MEMBERSHIP
             ├── DEMAND
             ├── FINANCIAL_ENTRY

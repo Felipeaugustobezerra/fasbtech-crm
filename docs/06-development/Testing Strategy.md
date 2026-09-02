@@ -704,6 +704,8 @@ Validam fluxos completos do ponto de vista do utilizador.
 
 Deverão ser reservados principalmente para fluxos críticos.
 
+No projeto, esses fluxos são executados com Playwright.
+
 ---
 
 # Foundation — E2E
@@ -721,7 +723,7 @@ Exemplos atuais:
 
 # Sprint 02 — E2E
 
-Quando Clientes & Acessos forem implementados, poderão incluir:
+Para Clientes & Acessos, os fluxos críticos podem incluir:
 
 - criar Cliente;
 - visualizar Cliente;
@@ -829,6 +831,11 @@ validar
 
 limpar
 ```
+
+- Lifecycles stateful podem ser executados em série, mesmo quando o Playwright utiliza `fullyParallel`.
+- Fixtures destrutivas são permitidas somente em ambiente `LOCAL ONLY`, com o guard local executado antes de reset ou mutations privilegiadas.
+- Não criar backdoors de teste para contornar autorização.
+- Quando o login fizer parte do cenário, a autenticação principal deverá ocorrer pela UI.
 
 ---
 
