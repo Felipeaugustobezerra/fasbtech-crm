@@ -37,13 +37,13 @@ export default async function ClientDetailsPage({
     notFound();
   }
 
-  const canManageClientAccess =
+  const canManageClient =
     context.status === "READY" && context.membership.role === "OWNER";
   const [clientAccesses, clientActivities, organizationMembers] =
     await Promise.all([
       listClientAccesses(client.id),
       listClientActivities(client.id),
-      canManageClientAccess ? listOrganizationMembers() : Promise.resolve([]),
+      canManageClient ? listOrganizationMembers() : Promise.resolve([]),
     ]);
   const assignedMembershipIds = new Set(
     clientAccesses.map((access) => access.membershipId),
@@ -98,12 +98,14 @@ export default async function ClientDetailsPage({
             >
               Voltar para Clientes
             </Link>
-            <Link
-              href={`/clientes/${client.id}/editar`}
-              className="inline-flex min-h-11 items-center justify-center rounded-lg bg-blue-700 px-4 text-sm font-semibold text-white transition hover:bg-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
-            >
-              Editar Cliente
-            </Link>
+            {canManageClient ? (
+              <Link
+                href={`/clientes/${client.id}/editar`}
+                className="inline-flex min-h-11 items-center justify-center rounded-lg bg-blue-700 px-4 text-sm font-semibold text-white transition hover:bg-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+              >
+                Editar Cliente
+              </Link>
+            ) : null}
           </div>
         </div>
       </header>
@@ -123,15 +125,15 @@ export default async function ClientDetailsPage({
         <ClientAccessSection
           clientId={client.id}
           accesses={clientAccesses}
-          canManageClientAccess={canManageClientAccess}
+          canManageClientAccess={canManageClient}
           candidates={eligibleMembers}
         />
 
         <ClientActivityList activities={clientActivities} />
 
-        {client.archived_at ? null : (
+        {canManageClient && !client.archived_at ? (
           <ClientArchive clientId={client.id} clientName={client.name} />
-        )}
+        ) : null}
       </div>
     </section>
   );

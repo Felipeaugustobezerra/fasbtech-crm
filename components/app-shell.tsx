@@ -42,6 +42,7 @@ const navigation = [
     label: "Acessos",
     href: "/acessos",
     enabled: true,
+    ownerOnly: true,
   },
 ] as const;
 
@@ -51,10 +52,14 @@ const roleLabels: Record<AppRole, string> = {
   MEMBER: "Membro",
 };
 
-function NavigationItems() {
+function NavigationItems({ role }: Readonly<{ role: AppRole }>) {
   return (
     <nav aria-label="Navegação principal" className="space-y-1">
       {navigation.map((item) => {
+        if ("ownerOnly" in item && item.ownerOnly && role !== "OWNER") {
+          return null;
+        }
+
         if (!item.enabled) {
           return (
             <div
@@ -114,7 +119,7 @@ export function AppShell({
         </div>
 
         <div className="flex-1 px-4 py-6">
-          <NavigationItems />
+          <NavigationItems role={role} />
         </div>
 
         <div className="border-t border-slate-800 px-5 py-5">
@@ -150,7 +155,7 @@ export function AppShell({
                     </p>
                   </div>
 
-                  <NavigationItems />
+                  <NavigationItems role={role} />
                 </div>
               </details>
             </div>

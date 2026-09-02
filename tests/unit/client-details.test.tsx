@@ -98,8 +98,12 @@ describe("client details UI", () => {
     expect(screen.queryByText(client.updated_by!)).toBeNull();
   });
 
-  it("renders the details route with edit and back navigation", async () => {
+  it("renders OWNER controls with edit, archive and access management", async () => {
     mocks.getClientById.mockResolvedValue(client);
+    mocks.resolveFoundationContext.mockResolvedValue({
+      status: "READY",
+      membership: { role: "OWNER" },
+    });
 
     const page = await ClientDetailsPage({
       params: Promise.resolve({ id: client.id }),
@@ -118,11 +122,45 @@ describe("client details UI", () => {
     expect(
       screen.getByRole("heading", { level: 2, name: "Acessos ao Cliente" }),
     ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Arquivar Cliente" })).toBeVisible();
+    expect(screen.getByText("Atribuir acesso")).toBeVisible();
     expect(mocks.getClientById).toHaveBeenCalledWith(client.id);
     expect(mocks.listClientAccesses).toHaveBeenCalledWith(client.id);
     expect(mocks.listClientActivities).toHaveBeenCalledWith(client.id);
-    expect(mocks.listOrganizationMembers).not.toHaveBeenCalled();
+    expect(mocks.listOrganizationMembers).toHaveBeenCalledOnce();
   });
+
+  it.each(["MEMBER", "ADMIN"] as const)(
+    "renders authorized details without OWNER controls for %s",
+    async (role) => {
+      mocks.getClientById.mockResolvedValue(client);
+      mocks.resolveFoundationContext.mockResolvedValue({
+        status: "READY",
+        membership: { role },
+      });
+      mocks.listClientActivities.mockResolvedValue([
+        {
+          action: "UPDATED",
+          createdAt: "2026-08-20T12:34:00.000Z",
+        },
+      ]);
+
+      const page = await ClientDetailsPage({
+        params: Promise.resolve({ id: client.id }),
+      });
+      render(page);
+
+      expect(
+        screen.getByRole("heading", { level: 1, name: client.name }),
+      ).toBeVisible();
+      expect(screen.queryByRole("link", { name: "Editar Cliente" })).toBeNull();
+      expect(screen.queryByRole("button", { name: "Arquivar Cliente" })).toBeNull();
+      expect(screen.queryByText("Atribuir acesso")).toBeNull();
+      expect(screen.queryByRole("button", { name: /Remover acesso/ })).toBeNull();
+      expect(screen.getByText("Cliente atualizado")).toBeVisible();
+      expect(mocks.listOrganizationMembers).not.toHaveBeenCalled();
+    },
+  );
 
   it.each(["MEMBER", "OWNER"] as const)(
     "renders the exact activity returned by RLS without a %s filter",

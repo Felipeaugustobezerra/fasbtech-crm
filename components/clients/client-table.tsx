@@ -6,6 +6,7 @@ type ClientTableProps = Readonly<{
   clients: Client[];
   search?: string;
   clearSearchHref?: string;
+  canCreateClient: boolean;
 }>;
 
 const dateFormatter = new Intl.DateTimeFormat("pt-PT", {
@@ -21,7 +22,11 @@ function formatDate(value: string) {
 function EmptyClients({
   search,
   clearSearchHref,
-}: Pick<ClientTableProps, "search" | "clearSearchHref">) {
+  canCreateClient,
+}: Pick<
+  ClientTableProps,
+  "search" | "clearSearchHref" | "canCreateClient"
+>) {
   const hasSearch = Boolean(search);
 
   return (
@@ -52,21 +57,29 @@ function EmptyClients({
       >
         {hasSearch
           ? "Nenhum cliente encontrado"
-          : "Ainda não existem clientes cadastrados"}
+          : canCreateClient
+            ? "Ainda não existem clientes cadastrados"
+            : "Nenhum Cliente visível"}
       </h2>
 
       <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-600">
         {hasSearch
           ? `Não encontrámos resultados para “${search}”. Reveja o termo pesquisado ou limpe a pesquisa.`
-          : "Cadastre o primeiro cliente para começar a organizar a operação da FASBtech."}
+          : canCreateClient
+            ? "Cadastre o primeiro cliente para começar a organizar a operação da FASBtech."
+            : "Não existem Clientes disponíveis para a sua conta neste momento."}
       </p>
 
-      <Link
-        href={hasSearch ? (clearSearchHref ?? "/clientes") : "/clientes/novo"}
-        className="mt-6 inline-flex min-h-11 items-center rounded-lg bg-blue-700 px-4 text-sm font-semibold text-white transition hover:bg-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
-      >
-        {hasSearch ? "Limpar pesquisa" : "Novo Cliente"}
-      </Link>
+      {hasSearch || canCreateClient ? (
+        <Link
+          href={
+            hasSearch ? (clearSearchHref ?? "/clientes") : "/clientes/novo"
+          }
+          className="mt-6 inline-flex min-h-11 items-center rounded-lg bg-blue-700 px-4 text-sm font-semibold text-white transition hover:bg-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+        >
+          {hasSearch ? "Limpar pesquisa" : "Novo Cliente"}
+        </Link>
+      ) : null}
     </section>
   );
 }
@@ -75,9 +88,16 @@ export function ClientTable({
   clients,
   search,
   clearSearchHref,
+  canCreateClient,
 }: ClientTableProps) {
   if (clients.length === 0) {
-    return <EmptyClients search={search} clearSearchHref={clearSearchHref} />;
+    return (
+      <EmptyClients
+        search={search}
+        clearSearchHref={clearSearchHref}
+        canCreateClient={canCreateClient}
+      />
+    );
   }
 
   return (

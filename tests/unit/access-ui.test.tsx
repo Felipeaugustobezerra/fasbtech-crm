@@ -14,11 +14,14 @@ const mocks = vi.hoisted(() => ({
   addOrganizationMemberAction: vi.fn(),
   listOrganizationMembers: vi.fn(),
   logout: vi.fn(),
+  notFound: vi.fn(),
   refresh: vi.fn(),
+  resolveFoundationContext: vi.fn(),
   updateOrganizationMemberRoleAction: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
+  notFound: mocks.notFound,
   useRouter: () => ({ refresh: mocks.refresh }),
 }));
 
@@ -36,6 +39,10 @@ vi.mock("@/lib/access/queries", () => ({
   listOrganizationMembers: mocks.listOrganizationMembers,
 }));
 
+vi.mock("@/services/foundation/foundation.service", () => ({
+  resolveFoundationContext: mocks.resolveFoundationContext,
+}));
+
 const membershipId = "11111111-1111-4111-8111-111111111111";
 const userId = "22222222-2222-4222-8222-222222222222";
 
@@ -48,6 +55,13 @@ const member: OrganizationMemberSummary = {
   membershipCreatedAt: "2026-08-10T12:00:00.000Z",
 };
 
+function readyContext(role: "OWNER" | "ADMIN" | "MEMBER") {
+  return {
+    status: "READY",
+    membership: { role },
+  };
+}
+
 async function renderPage() {
   const page = await AccessPage();
 
@@ -59,9 +73,15 @@ describe("access UI", () => {
     mocks.addOrganizationMemberAction.mockReset();
     mocks.listOrganizationMembers.mockReset();
     mocks.logout.mockReset();
+    mocks.notFound.mockReset();
     mocks.refresh.mockReset();
+    mocks.resolveFoundationContext.mockReset();
     mocks.updateOrganizationMemberRoleAction.mockReset();
     mocks.listOrganizationMembers.mockResolvedValue([member]);
+    mocks.resolveFoundationContext.mockResolvedValue(readyContext("OWNER"));
+    mocks.notFound.mockImplementation(() => {
+      throw new Error("NEXT_NOT_FOUND");
+    });
   });
 
   it("renders visible Memberships without administrative identifiers", async () => {
@@ -103,6 +123,18 @@ describe("access UI", () => {
       screen.getAllByRole("link", { name: "Adicionar utilizador" }),
     ).toHaveLength(2);
   });
+
+  it.each(["MEMBER", "ADMIN"] as const)(
+    "blocks /acessos before querying Memberships for %s",
+    async (role) => {
+      mocks.resolveFoundationContext.mockResolvedValue(readyContext(role));
+
+      await expect(AccessPage()).rejects.toThrow("NEXT_NOT_FOUND");
+
+      expect(mocks.notFound).toHaveBeenCalledOnce();
+      expect(mocks.listOrganizationMembers).not.toHaveBeenCalled();
+    },
+  );
 
   it("renders the add member fields with only official roles", () => {
     render(<AddMemberForm />);
@@ -330,4 +362,23 @@ describe("access UI", () => {
       expect(screen.queryByRole("link", { name: label })).toBeNull();
     }
   });
+
+  it.each(["MEMBER", "ADMIN"] as const)(
+    "does not show Access navigation to %s",
+    (role) => {
+      render(
+        <AppShell
+          organizationName="FASBtech"
+          role={role}
+          userEmail={`${role.toLowerCase()}@example.com`}
+        >
+          <p>Conteúdo</p>
+        </AppShell>,
+      );
+
+      expect(screen.queryByRole("link", { name: "Acessos" })).toBeNull();
+      expect(screen.queryByText("Acessos")).toBeNull();
+      expect(screen.getAllByRole("link", { name: "Clientes" })).toHaveLength(2);
+    },
+  );
 });

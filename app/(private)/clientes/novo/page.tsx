@@ -1,8 +1,16 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
 import { ClientForm } from "@/components/clients/client-form";
+import { resolveFoundationContext } from "@/services/foundation/foundation.service";
 
-export default function NewClientPage() {
+export default async function NewClientPage() {
+  const context = await resolveFoundationContext();
+
+  if (context.status !== "READY" || context.membership.role !== "OWNER") {
+    notFound();
+  }
+
   return (
     <section
       className="mx-auto w-full max-w-4xl"

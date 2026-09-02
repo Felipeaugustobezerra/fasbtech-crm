@@ -5,6 +5,7 @@ import { ClientForm } from "@/components/clients/client-form";
 import { mapClientToInput } from "@/lib/clients/mapper";
 import { getClientById } from "@/lib/clients/queries";
 import { clientIdSchema } from "@/schemas/client";
+import { resolveFoundationContext } from "@/services/foundation/foundation.service";
 
 type EditClientPageProps = Readonly<{
   params: Promise<{ id: string }>;
@@ -15,6 +16,12 @@ export default async function EditClientPage({ params }: EditClientPageProps) {
   const parsedClientId = clientIdSchema.safeParse(id);
 
   if (!parsedClientId.success) {
+    notFound();
+  }
+
+  const context = await resolveFoundationContext();
+
+  if (context.status !== "READY" || context.membership.role !== "OWNER") {
     notFound();
   }
 

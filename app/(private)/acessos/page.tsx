@@ -1,8 +1,17 @@
+import { notFound } from "next/navigation";
+
 import { AccessTable } from "@/components/access/access-table";
 import { AddMemberForm } from "@/components/access/add-member-form";
 import { listOrganizationMembers } from "@/lib/access/queries";
+import { resolveFoundationContext } from "@/services/foundation/foundation.service";
 
 export default async function AccessPage() {
+  const context = await resolveFoundationContext();
+
+  if (context.status !== "READY" || context.membership.role !== "OWNER") {
+    notFound();
+  }
+
   const members = await listOrganizationMembers();
 
   return (

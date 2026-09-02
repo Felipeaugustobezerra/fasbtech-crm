@@ -1,6 +1,9 @@
 import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import ClientsError from "@/app/(private)/clientes/error";
+import ClientsLoading from "@/app/(private)/clientes/loading";
 import ClientsPage from "@/app/(private)/clientes/page";
 import { ClientPagination } from "@/components/clients/client-pagination";
 import type { ClientListResult } from "@/lib/clients/queries";
@@ -8,11 +11,16 @@ import type { Client } from "@/types/client";
 
 const mocks = vi.hoisted(() => ({
   listClients: vi.fn(),
+  resolveFoundationContext: vi.fn(),
 }));
 
 vi.mock("@/lib/clients/queries", () => ({
   CLIENT_SORT_FIELDS: ["name", "created_at", "updated_at"],
   listClients: mocks.listClients,
+}));
+
+vi.mock("@/services/foundation/foundation.service", () => ({
+  resolveFoundationContext: mocks.resolveFoundationContext,
 }));
 
 const client: Client = {
@@ -51,6 +59,13 @@ function createResult(
   };
 }
 
+function readyContext(role: "OWNER" | "ADMIN" | "MEMBER") {
+  return {
+    status: "READY",
+    membership: { role },
+  };
+}
+
 async function renderPage(
   searchParams: Record<string, string | string[] | undefined> = {},
 ) {
@@ -64,7 +79,9 @@ async function renderPage(
 describe("clients list UI", () => {
   beforeEach(() => {
     mocks.listClients.mockReset();
+    mocks.resolveFoundationContext.mockReset();
     mocks.listClients.mockResolvedValue(createResult());
+    mocks.resolveFoundationContext.mockResolvedValue(readyContext("OWNER"));
   });
 
   it("renders the authorized clients list", async () => {
@@ -104,6 +121,42 @@ describe("clients list UI", () => {
     );
   });
 
+  it("keeps the authorized list visible without creation controls for MEMBER", async () => {
+    mocks.resolveFoundationContext.mockResolvedValue(readyContext("MEMBER"));
+
+    await renderPage();
+
+    expect(screen.getByRole("rowheader", { name: client.name })).toBeVisible();
+    expect(screen.queryByRole("link", { name: "Novo Cliente" })).toBeNull();
+  });
+
+  it("uses a neutral empty state without a creation CTA for MEMBER", async () => {
+    mocks.resolveFoundationContext.mockResolvedValue(readyContext("MEMBER"));
+    mocks.listClients.mockResolvedValue(
+      createResult({ clients: [], count: 0, totalPages: 0 }),
+    );
+
+    await renderPage();
+
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Nenhum Cliente visível" }),
+    ).toBeVisible();
+    expect(
+      screen.getByText(
+        "Não existem Clientes disponíveis para a sua conta neste momento.",
+      ),
+    ).toBeVisible();
+    expect(screen.queryByRole("link", { name: "Novo Cliente" })).toBeNull();
+  });
+
+  it("does not expose creation controls to ADMIN", async () => {
+    mocks.resolveFoundationContext.mockResolvedValue(readyContext("ADMIN"));
+
+    await renderPage();
+
+    expect(screen.queryByRole("link", { name: "Novo Cliente" })).toBeNull();
+  });
+
   it("reflects search in the URL-driven UI and query", async () => {
     mocks.listClients.mockResolvedValue(
       createResult({ clients: [], count: 0, totalPages: 0 }),
@@ -132,6 +185,21 @@ describe("clients list UI", () => {
       sortBy: "updated_at",
       sortDirection: "desc",
     });
+  });
+
+  it("keeps clear search available to MEMBER with no matches", async () => {
+    mocks.resolveFoundationContext.mockResolvedValue(readyContext("MEMBER"));
+    mocks.listClients.mockResolvedValue(
+      createResult({ clients: [], count: 0, totalPages: 0 }),
+    );
+
+    await renderPage({ search: "Sem resultado" });
+
+    expect(screen.getByRole("link", { name: "Limpar pesquisa" })).toHaveAttribute(
+      "href",
+      "/clientes?page=1&sortBy=name&sortDirection=asc",
+    );
+    expect(screen.queryByRole("link", { name: "Novo Cliente" })).toBeNull();
   });
 
   it("preserves search and sorting in pagination links", () => {
@@ -221,5 +289,30 @@ describe("clients list UI", () => {
     });
     expect(screen.getByText("41–45")).toBeInTheDocument();
     expect(screen.getByRole("rowheader", { name: client.name })).toBeVisible();
+  });
+
+  it("renders accessible loading and safe recoverable error states", async () => {
+    const user = userEvent.setup();
+    const reset = vi.fn();
+    const { unmount } = render(<ClientsLoading />);
+
+    expect(screen.getByRole("status")).toHaveTextContent("A carregar Clientes.");
+    expect(
+      screen.getByRole("region", { name: "A carregar Clientes" }),
+    ).toHaveAttribute("aria-busy", "true");
+
+    unmount();
+    render(<ClientsError reset={reset} />);
+
+    expect(
+      screen.getByRole("heading", {
+        level: 1,
+        name: "Não foi possível carregar os Clientes",
+      }),
+    ).toBeVisible();
+    expect(document.body.textContent).not.toContain("CLIENTS_QUERY_FAILED");
+
+    await user.click(screen.getByRole("button", { name: "Tentar novamente" }));
+    expect(reset).toHaveBeenCalledOnce();
   });
 });

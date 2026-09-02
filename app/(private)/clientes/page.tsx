@@ -13,6 +13,7 @@ import {
   type ClientSortField,
   type ListClientsParams,
 } from "@/lib/clients/queries";
+import { resolveFoundationContext } from "@/services/foundation/foundation.service";
 
 type SearchParamValue = string | string[] | undefined;
 
@@ -61,7 +62,11 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
     sortDirection,
   };
 
-  let result = await listClients(queryParams);
+  const [initialResult, context] = await Promise.all([
+    listClients(queryParams),
+    resolveFoundationContext(),
+  ]);
+  let result = initialResult;
 
   if (result.totalPages > 0 && result.page > result.totalPages) {
     result = await listClients({
@@ -80,6 +85,8 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
     sortBy,
     sortDirection,
   });
+  const canCreateClient =
+    context.status === "READY" && context.membership.role === "OWNER";
 
   return (
     <section className="mx-auto w-full max-w-7xl" aria-labelledby="clients-title">
@@ -99,12 +106,14 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
           </p>
         </div>
 
-        <Link
-          href="/clientes/novo"
-          className="inline-flex min-h-11 shrink-0 items-center justify-center self-start rounded-lg bg-blue-700 px-4 text-sm font-semibold text-white transition hover:bg-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
-        >
-          Novo Cliente
-        </Link>
+        {canCreateClient ? (
+          <Link
+            href="/clientes/novo"
+            className="inline-flex min-h-11 shrink-0 items-center justify-center self-start rounded-lg bg-blue-700 px-4 text-sm font-semibold text-white transition hover:bg-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+          >
+            Novo Cliente
+          </Link>
+        ) : null}
       </header>
 
       <div className="mt-8 space-y-5">
@@ -118,6 +127,7 @@ export default async function ClientsPage({ searchParams }: ClientsPageProps) {
           clients={result.clients}
           search={normalizedSearch}
           clearSearchHref={clearSearchHref}
+          canCreateClient={canCreateClient}
         />
 
         {result.count > 0 ? (
