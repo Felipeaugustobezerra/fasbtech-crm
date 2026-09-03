@@ -219,6 +219,200 @@ export type Database = {
           },
         ]
       }
+      demand_assignees: {
+        Row: {
+          created_at: string
+          created_by: string
+          demand_id: string
+          id: string
+          membership_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          demand_id: string
+          id?: string
+          membership_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          demand_id?: string
+          id?: string
+          membership_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demand_assignees_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "demand_assignees_demand_id_fkey"
+            columns: ["demand_id"]
+            isOneToOne: false
+            referencedRelation: "demands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "demand_assignees_membership_id_fkey"
+            columns: ["membership_id"]
+            isOneToOne: false
+            referencedRelation: "organization_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demand_tag_assignments: {
+        Row: {
+          created_at: string
+          demand_id: string
+          tag_id: string
+        }
+        Insert: {
+          created_at?: string
+          demand_id: string
+          tag_id: string
+        }
+        Update: {
+          created_at?: string
+          demand_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demand_tag_assignments_demand_id_fkey"
+            columns: ["demand_id"]
+            isOneToOne: false
+            referencedRelation: "demands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "demand_tag_assignments_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "demand_tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demand_tags: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          organization_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          organization_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demand_tags_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "demand_tags_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demands: {
+        Row: {
+          archived_at: string | null
+          client_id: string
+          created_at: string
+          created_by: string
+          description: string | null
+          due_date: string | null
+          id: string
+          notes: string | null
+          organization_id: string
+          priority: string
+          start_date: string | null
+          status: string
+          title: string
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          archived_at?: string | null
+          client_id: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          organization_id: string
+          priority?: string
+          start_date?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          updated_by: string
+        }
+        Update: {
+          archived_at?: string | null
+          client_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          priority?: string
+          start_date?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demands_client_organization_fkey"
+            columns: ["client_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "demands_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "demands_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           archived_at: string | null
@@ -334,11 +528,16 @@ export type Database = {
         Returns: string
       }
       archive_client: { Args: { p_client_id: string }; Returns: string }
+      archive_demand: { Args: { p_demand_id: string }; Returns: string }
       assign_client_access: {
         Args: { p_client_id: string; p_membership_id: string }
         Returns: string
       }
       bootstrap_initial_organization: { Args: never; Returns: string }
+      change_demand_status: {
+        Args: { p_demand_id: string; p_status: string }
+        Returns: string
+      }
       create_client: {
         Args: {
           p_address_line_1?: string
@@ -357,8 +556,50 @@ export type Database = {
         }
         Returns: string
       }
+      create_demand: {
+        Args: {
+          p_assignee_membership_ids?: string[]
+          p_client_id: string
+          p_description?: string
+          p_due_date?: string
+          p_notes?: string
+          p_priority?: string
+          p_start_date?: string
+          p_title: string
+        }
+        Returns: string
+      }
+      list_demand_assignees: {
+        Args: { p_demand_id: string }
+        Returns: {
+          full_name: string
+          is_currently_eligible: boolean
+          membership_id: string
+          role: string
+        }[]
+      }
+      list_eligible_demand_assignees: {
+        Args: { p_client_id: string }
+        Returns: {
+          full_name: string
+          membership_id: string
+          role: string
+        }[]
+      }
       remove_client_access: {
         Args: { p_client_id: string; p_membership_id: string }
+        Returns: string
+      }
+      set_demand_assignees: {
+        Args: { p_demand_id: string; p_membership_ids: string[] }
+        Returns: string
+      }
+      set_demand_tags: {
+        Args: {
+          p_demand_id: string
+          p_new_tag_names: string[]
+          p_tag_ids: string[]
+        }
         Returns: string
       }
       update_client: {
@@ -377,6 +618,18 @@ export type Database = {
           p_region?: string
           p_tax_id?: string
           p_tax_id_type?: string
+        }
+        Returns: string
+      }
+      update_demand: {
+        Args: {
+          p_demand_id: string
+          p_description?: string
+          p_due_date?: string
+          p_notes?: string
+          p_priority?: string
+          p_start_date?: string
+          p_title: string
         }
         Returns: string
       }
