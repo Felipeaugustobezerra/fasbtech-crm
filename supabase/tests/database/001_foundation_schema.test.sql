@@ -11,7 +11,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 
 
-select plan(23);
+select plan(22);
 
 
 
@@ -53,16 +53,9 @@ select has_table(
 -- 2. TABELAS AINDA FORA DO MVP ATUAL NÃO DEVEM EXISTIR
 -- ============================================================
 
--- clients e client_assignments deixaram de ser "futuras" após a
--- Migration da Sprint 02. A estrutura delas é validada em
--- 005_clients_schema.test.sql.
-
-
-select hasnt_table(
-  'public',
-  'demands',
-  'demands ainda não deve existir nesta etapa'
-);
+-- clients, client_assignments e demands deixaram de ser "futuras"
+-- após as Migrations das Sprints 02 e 03. Suas estruturas são
+-- validadas nas suítes específicas desses módulos.
 
 
 select hasnt_table(
