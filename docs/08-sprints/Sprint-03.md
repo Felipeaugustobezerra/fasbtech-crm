@@ -14,7 +14,7 @@ FASBtech CRM
 
 ## Status
 
-🟡 Planejada
+🟡 Planejada — contrato físico aprovado
 
 ---
 
@@ -26,9 +26,9 @@ Setembro de 2026
 
 # Estado do Planejamento
 
-Este documento formaliza o contrato inicial da Sprint 03.
+Este documento formaliza o planejamento funcional e o contrato físico da Sprint 03.
 
-A Sprint permanece tecnicamente não iniciada até a aprovação deste planejamento e a resolução das decisões marcadas como obrigatórias antes da migration.
+O contrato físico está aprovado em `docs/04-database/Demands.md`. A Sprint permanece tecnicamente não iniciada; nenhum código, migration ou teste foi implementado por este planejamento.
 
 Este documento não implementa:
 
@@ -121,6 +121,7 @@ Antes do início técnico da Sprint, deverão ser consultados somente os documen
 - System Architecture;
 - Module Architecture;
 - Data Model;
+- Demands;
 - Organization User Model;
 - RLS;
 - Activity Logs;
@@ -265,31 +266,46 @@ A existência de uma relação estrutural nunca substitui autorização.
 
 # Demanda
 
-Cada Demanda deverá suportar conceitualmente:
+Cada Demanda deverá possuir fisicamente:
 
-- identificador;
-- Organization proprietária;
-- Cliente;
-- título;
-- descrição;
-- `0..N` responsáveis internos;
-- data de início;
-- prazo;
-- Prioridade;
-- Status;
-- Tags;
-- observações ou notas;
-- documentos relacionados, conceitualmente;
-- timestamps;
-- arquivamento lógico.
+- `id` UUID;
+- `organization_id` UUID derivado do Cliente;
+- `client_id` UUID obrigatório e imutável;
+- `title` TEXT obrigatório e não vazio após trim;
+- `description` TEXT opcional;
+- `status` obrigatório, com default `OPEN`;
+- `priority` obrigatória, com default `MEDIUM`;
+- `start_date` DATE opcional;
+- `due_date` DATE opcional;
+- `notes` TEXT opcional;
+- `created_by` e `updated_by` vinculados a Profiles e determinados no backend;
+- `created_at` e `updated_at` como TIMESTAMPTZ;
+- `archived_at` como TIMESTAMPTZ opcional.
 
-Título e Cliente são obrigatórios pelo contrato funcional específico de Demandas.
+A Demanda também poderá possuir `0..N` responsáveis internos e `0..N` Tags por meio das relações físicas congeladas em `Demands`.
+
+Primary Keys congeladas:
+
+```text
+demands
+→ id UUID
+
+demand_assignees
+→ id UUID
+
+demand_tags
+→ id UUID
+
+demand_tag_assignments
+→ (demand_id, tag_id)
+→ sem UUID próprio
+```
+
+Título e Cliente são os campos funcionais obrigatórios do payload.
 
 A associação de responsáveis é opcional e possui cardinalidade `0..N`. O contrato garante suporte a múltiplos responsáveis, mas não exige que uma Demanda possua ao menos um responsável.
 
-Existe uma ambiguidade normativa a resolver antes da migration: o PRD apresenta descrição, data de início, prazo, Prioridade, Status, Tags, documentos e observações na lista mínima da Demanda, enquanto Functional Requirements determina explicitamente apenas que a Demanda deve permitir esses dados e o próprio PRD afirma depois que Demandas poderão possuir prazo.
-
-Por isso, a obrigatoriedade e nulabilidade desses campos não são resolvidas silenciosamente neste planejamento. Nomes físicos, tipos, limites e defaults também deverão ser confirmados antes da migration.
+Descrição, data de início, prazo e notas são opcionais. Status e Prioridade são obrigatórios e recebem os defaults congelados. Tags e responsáveis são relações opcionais. Documents permanecem apenas como integração conceitual fora do contrato físico desta Sprint.
 
 ---
 
@@ -315,7 +331,8 @@ Regras:
 - Cliente e Demanda pertencem à mesma Organization;
 - conhecer `client_id` ou `demand_id` não concede autorização;
 - a existência da Demanda não concede acesso ao Cliente;
-- a alteração posterior do Cliente da Demanda não está autorizada por este planejamento até decisão explícita.
+- `client_id` e `organization_id` são imutáveis após a criação;
+- uma Demanda criada para o Cliente incorreto deverá ser arquivada e recriada corretamente, inclusive por OWNER.
 
 ---
 
@@ -348,6 +365,20 @@ O Data Model utiliza conceitualmente:
 demand_assignees
 ```
 
+Estrutura física congelada:
+
+```text
+demand_assignees
+
+id
+demand_id
+membership_id
+created_by
+created_at
+```
+
+A relação deverá possuir unicidade de `(demand_id, membership_id)`.
+
 Regras obrigatórias:
 
 - o responsável deve possuir Membership válida na Organization da Demanda;
@@ -359,7 +390,32 @@ Regras obrigatórias:
 - alterações no conjunto de responsáveis são auditáveis;
 - a atualização composta do conjunto de responsáveis deverá ser atômica quando puder deixar estado parcial.
 
-O comportamento persistente da associação de responsável após a remoção do Client Assignment deverá ser confirmado antes da migration. Em qualquer alternativa, a relação nunca poderá manter o acesso do `MEMBER`.
+A associação física será preservada após a remoção posterior do Client Assignment para manter o histórico operacional. Ela nunca será utilizada como autorização. O `MEMBER` perde o acesso imediatamente porque RLS, Queries e RPCs dependem sempre do Client Assignment atual. A associação preservada poderá ser removida depois por uma operação autorizada de gestão de responsáveis.
+
+No momento da atribuição:
+
+- OWNER ativo da mesma Organization é elegível sem Client Assignment;
+- MEMBER ativo da mesma Organization exige Client Assignment atual para o Cliente;
+- ADMIN não é elegível nesta Sprint.
+
+`list_eligible_demand_assignees` fornecerá somente candidatos atualmente válidos para o Cliente, com a projeção mínima:
+
+```text
+membership_id
+full_name
+role
+```
+
+Para exibir responsáveis já vinculados, inclusive históricos, `list_demand_assignees` receberá somente `demand_id`, exigirá acesso atual do chamador à Demanda e retornará apenas:
+
+```text
+membership_id
+full_name
+role
+is_currently_eligible
+```
+
+As duas leituras serão RPCs mínimas endurecidas porque as Policies globais de Profiles e Memberships não serão ampliadas para alimentar seletores. Nenhuma delas aceitará consulta arbitrária por `membership_id`, listará outras Organizations ou concederá acesso ao responsável histórico.
 
 ---
 
@@ -385,7 +441,11 @@ Regras:
 - a alteração de Status é auditável;
 - nenhuma máquina rígida de transições é criada por este planejamento.
 
-O Status inicial padrão deverá ser confirmado antes da migration.
+O Status inicial padrão é:
+
+```text
+OPEN
+```
 
 ---
 
@@ -407,7 +467,11 @@ Regras:
 - Prioridade é independente de Status e Tags;
 - alterações de Prioridade são auditáveis.
 
-A Prioridade inicial padrão deverá ser confirmada antes da migration.
+A Prioridade inicial padrão é:
+
+```text
+MEDIUM
+```
 
 ---
 
@@ -439,7 +503,62 @@ Tags:
 - poderão participar de filtros quando implementadas;
 - deverão respeitar Organization e autorização da Demanda.
 
-Escopo, normalização, unicidade, criação livre ou catálogo controlado de Tags são decisões físicas e funcionais a confirmar antes da migration.
+Estruturas físicas congeladas:
+
+```text
+demand_tags
+
+id
+organization_id
+name
+created_by
+created_at
+```
+
+e:
+
+```text
+demand_tag_assignments
+
+demand_id
+tag_id
+created_at
+```
+
+`demand_tag_assignments` utiliza Primary Key composta `(demand_id, tag_id)` e não possui UUID próprio.
+
+Tags formam um catálogo livre por Organization. O nome é armazenado com trim e a capitalização de exibição preservada. A unicidade utiliza `Organization + lower(trim(name))`, impedindo duplicatas conceituais sem proibir uma Tag chamada “Urgente”.
+
+`set_demand_tags` é a fronteira transacional para gerir o conjunto completo de Tags de uma Demanda. Seu contrato conceitual aceita referências a Tags existentes e novos nomes, sem congelar ainda a assinatura SQL.
+
+A operação deverá:
+
+- resolver a Organization pela Demanda autorizada;
+- validar Tags existentes na mesma Organization;
+- normalizar novos nomes com trim e comparar por `lower(trim(name))`;
+- reutilizar a Tag correspondente ou criar uma Tag inexistente na Organization;
+- substituir os `demand_tag_assignments` atomicamente;
+- impedir relações cross-Organization;
+- registrar `DEMAND / UPDATED` com metadata mínima;
+- nunca utilizar Tags como autorização.
+
+Nesta Sprint:
+
+```text
+criação inline de Tag
+→ permitida por set_demand_tags
+
+rename global de Tag
+→ fora do escopo
+
+delete global de Tag
+→ fora do escopo
+
+administração independente do catálogo
+→ fora do escopo
+```
+
+Remover a última associação não excluirá automaticamente uma Tag órfã.
 
 ---
 
@@ -447,8 +566,10 @@ Escopo, normalização, unicidade, criação livre ou catálogo controlado de Ta
 
 A Demanda deverá permitir:
 
-- data de início;
-- prazo de entrega.
+- `start_date` opcional como `DATE`;
+- `due_date` opcional como `DATE`.
+
+Esses campos representam datas civis. Nenhum horário de prazo será persistido ou inferido.
 
 Atraso é um estado derivado dos dados da Demanda, não um campo duplicado armazenado.
 
@@ -468,7 +589,7 @@ Demandas arquivadas não aparecem nas listagens operacionais padrão.
 
 As classificações de prazo deverão ser derivadas dos dados da Demanda e não armazenadas como métricas duplicadas para o Dashboard.
 
-A fronteira temporal exata da expiração, o timezone de comparação e a semântica civil ou temporal dos campos deverão ser confirmados antes da implementação da regra.
+A convenção única de data local da aplicação usada na comparação deverá ser confirmada antes da implementação do helper de prazo. Essa decisão não altera o schema físico congelado.
 
 “Próxima do prazo” também é uma classificação derivada. Seu limiar temporal não está congelado e deverá ser aprovado antes da implementação.
 
@@ -626,28 +747,31 @@ Para Demandas de Clientes da própria Organization, o planejamento prevê acesso
 
 # ADMIN
 
-As fontes normativas definem `ADMIN` apenas como administrativo conforme permissões oficiais do módulo.
+`ADMIN` não participa do módulo de Demandas nesta Sprint.
 
-Este planejamento não concede a `ADMIN` acesso global, Client Assignment implícito ou operações novas por inferência.
+Não poderá listar, visualizar, criar, editar, alterar Status/Prioridade/datas, gerir Tags ou responsáveis, trocar Cliente ou arquivar Demandas.
 
-A matriz concreta de leitura, criação, edição, Status, responsáveis e arquivamento de `ADMIN` deverá ser aprovada antes da implementação.
+Esta negação não concede acesso global nem Client Assignment implícito e não redefine permissões de Sprints futuras.
 
 ---
 
 # MEMBER
 
-`MEMBER` possui acesso operacional restrito.
+`MEMBER` possui acesso operacional restrito às Demandas de Clientes para os quais mantenha Client Assignment válido.
 
-O Client Assignment autoriza o contexto do Cliente, mas não define sozinho quais operações de escrita o `MEMBER` poderá executar.
+Nesse contexto, poderá:
 
-Este planejamento congela:
+- listar e visualizar;
+- criar;
+- editar título, descrição e notas;
+- alterar Status e Prioridade;
+- alterar data de início e prazo;
+- gerir Tags;
+- gerir responsáveis.
 
-- leitura apenas das Demandas de Clientes autorizados;
-- negação de Clientes não atribuídos;
-- negação após remoção do Client Assignment;
-- impossibilidade de obter acesso apenas por ser responsável.
+Não poderá trocar o Cliente nem arquivar a Demanda.
 
-A matriz concreta de criação, edição, Status, Prioridade, responsáveis e arquivamento de `MEMBER` deverá ser aprovada antes da implementação.
+Sem Client Assignment atual, todas essas operações são negadas, ainda que o MEMBER permaneça fisicamente associado como responsável.
 
 ---
 
@@ -794,6 +918,13 @@ Pesquisa, filtros, ordenação e paginação deverão ocorrer no banco.
 
 RPC não será utilizada por padrão para leitura simples.
 
+Exceções aprovadas:
+
+- `list_eligible_demand_assignees(client_id)` retorna candidatos elegíveis com projeção mínima;
+- `list_demand_assignees(demand_id)` retorna somente responsáveis vinculados à Demanda acessível, incluindo o estado derivado de elegibilidade atual.
+
+Essas RPCs evitam abrir leitura geral de Profiles e Memberships. Ambas deverão recalcular autorização internamente, impedir enumeração arbitrária e retornar somente os campos congelados no contrato `Demands`.
+
 ## Escritas
 
 Fluxo de entrada esperado:
@@ -819,20 +950,21 @@ Service
 
 ↓
 
-Mutation ou RPC conforme necessidade real
+RPC transacional aprovada
 ```
 
-Mutations somente poderão ser utilizadas quando a operação for simples, autorizável por RLS e não exigir auditoria atômica ou múltiplas escritas.
+Todas as escritas de Demandas desta Sprint utilizarão RPC, pois cada operação relevante exige autorização, mutação e Activity Log na mesma transação e as relações podem exigir múltiplas escritas.
 
-RPCs deverão ser utilizadas quando houver:
+Fronteiras operacionais congeladas:
 
-- múltiplas escritas atômicas;
-- atualização composta de responsáveis ou Tags;
-- Activity Log obrigatório na mesma operação;
-- autorização privilegiada controlada;
-- necessidade de rollback conjunto.
+- criar Demanda e responsáveis iniciais opcionais;
+- atualizar conteúdo, Prioridade e datas;
+- alterar Status separadamente;
+- substituir o conjunto de responsáveis;
+- substituir o conjunto de Tags;
+- arquivar Demanda.
 
-Este planejamento não define nomes nem assinaturas de RPCs.
+Os nomes propostos, consistentes com a Sprint 02, são `create_demand`, `update_demand`, `change_demand_status`, `set_demand_assignees`, `set_demand_tags` e `archive_demand`. A migration poderá ajustar nomes às convenções reais, mas não alterar essas fronteiras.
 
 Toda RPC `SECURITY DEFINER`, se necessária, deverá validar internamente o contrato completo de RLS e ADR-002, usar `SET search_path = ''`, schemas explícitos e `EXECUTE` restrito.
 
@@ -870,7 +1002,7 @@ Nenhum SQL será criado nesta etapa.
 
 A futura migration deverá introduzir somente a infraestrutura aprovada para Demandas.
 
-Estruturas conceituais já presentes no Data Model e em Migrations:
+Estruturas físicas congeladas em `Demands`:
 
 ```text
 demands
@@ -879,17 +1011,18 @@ demand_tags
 demand_tag_assignments
 ```
 
-Esses nomes representam o modelo conceitual atual, não um schema físico congelado por este documento.
-
-Nenhuma tabela `notifications` é presumida pelo planejamento físico. A persistência de avisos internos somente poderá ser incluída se for necessária ao mecanismo backend posteriormente aprovado.
+Nenhuma tabela `notifications` ou Documents integra a migration da Sprint 03. Persistência e mecanismo de avisos internos permanecem separados até contrato específico.
 
 ---
 
 # Constraints a Planejar
 
-A migration deverá avaliar e implementar, conforme o schema aprovado:
+A migration deverá implementar conforme o contrato `Demands`:
 
-- Primary Keys com UUID;
+- UUID Primary Key em `demands.id`;
+- UUID Primary Key em `demand_assignees.id`;
+- UUID Primary Key em `demand_tags.id`;
+- Primary Key composta `(demand_id, tag_id)` em `demand_tag_assignments`, sem UUID próprio;
 - Foreign Keys para estruturas já existentes;
 - pertencimento da Demanda ao Cliente e à Organization correta;
 - responsáveis vinculados à mesma Organization;
@@ -907,7 +1040,7 @@ Foreign Key não substitui autorização.
 
 # Índices a Planejar
 
-Índices deverão ser definidos a partir de padrões reais de:
+Os índices mínimos congelados em `Demands` atendem aos padrões reais de:
 
 - autorização por Organization e Cliente;
 - Client Assignment para `MEMBER`;
@@ -920,7 +1053,7 @@ Foreign Key não substitui autorização.
 - identificação de prazos;
 - consultas autorizadas de Activity Logs.
 
-Não criar índices especulativos antes de definir Queries e planos de execução esperados.
+Não criar índices adicionais sem Query e plano de execução que os justifiquem.
 
 ---
 
@@ -943,61 +1076,68 @@ As Policies deverão garantir:
 - ausência de delete físico pelo fluxo normal;
 - acesso autorizado a Activity Logs e, se houver persistência aprovada, aos avisos internos de prazo.
 
-As Policies concretas de Demandas ainda não existem no documento RLS e deverão ser congeladas antes da migration.
+As Policies concretas estão congeladas no contrato `Demands`: SELECT depende da autorização atual por Organization e Client Assignment; `demand_assignees` nunca concede acesso; ADMIN é negado; e não haverá escrita direta nas quatro tabelas. Escritas serão feitas somente pelas RPCs autorizadas.
 
 ---
 
-# Decisões Físicas a Confirmar Antes da Migration
+# Decisões Físicas Congeladas Antes da Migration
 
-Cada item desta seção é um bloqueio explícito para o início da migration.
+O contrato completo está em `docs/04-database/Demands.md`.
 
-## Schema de `demands`
+## Schema e Ownership
 
-**Decisão física a confirmar antes da migration:** nomes de colunas, tipos, nulabilidade, limites, defaults, timestamps e representação do arquivamento.
+- schemas, tipos, nulabilidade, defaults, timestamps e arquivamento das quatro tabelas estão congelados;
+- `organization_id` da Demanda é derivado do Cliente;
+- integridade Demand/Client/Organization usa Foreign Key composta;
+- `client_id` e `organization_id` são imutáveis.
 
-## Ownership
+## Responsáveis e Tags
 
-**Decisão física a confirmar antes da migration:** como `organization_id` e `client_id` serão persistidos e protegidos contra divergência.
+- `demands`, `demand_assignees` e `demand_tags` usam UUID PK;
+- `demand_tag_assignments` usa Primary Key composta e não possui UUID;
+- `demand_assignees` possui unicidade por Demanda e Membership;
+- a associação é preservada após a remoção do Client Assignment, sem conceder autorização;
+- candidatos e responsáveis vinculados são expostos somente pelas duas RPCs mínimas aprovadas, sem ampliar Policies globais;
+- Tags pertencem à Organization e usam unicidade por nome normalizado;
+- `set_demand_tags` aceita Tags existentes e novos nomes, reutiliza ou cria dentro da Organization e substitui associações atomicamente;
+- rename, delete, administração independente e limpeza automática de Tags órfãs não integram a Sprint;
+- relações cross-Organization não demonstráveis por FK usam trigger privado e validação da RPC.
 
-## Responsáveis
+## Campos, Defaults e Prazos
 
-**Decisão física a confirmar antes da migration:** schema de `demand_assignees`, chaves, unicidade, estados válidos do Membership e tratamento da associação após remoção de Client Assignment.
+- Cliente e título são obrigatórios no payload funcional;
+- descrição, datas e notas são opcionais;
+- Status inicia em `OPEN`;
+- Prioridade inicia em `MEDIUM`;
+- início e prazo usam `DATE`;
+- atraso permanece derivado;
+- a convenção local de comparação deverá ser confirmada antes do helper de prazo;
+- nenhum limiar de “próxima do prazo” está congelado.
 
-## Tags
+## Pesquisa, Ordenação e Paginação
 
-**Decisão física a confirmar antes da migration:** schemas de `demand_tags` e `demand_tag_assignments`, escopo por Organization, normalização, unicidade e ciclo de vida.
+- pesquisa inicial em título e descrição;
+- filtros por Cliente, Status, Prioridade, responsável, Tags e prazo;
+- ordenação por whitelist de `created_at`, `updated_at`, `title`, `start_date`, `due_date`, `status` e `priority`;
+- paginação no banco com 10, 20, 50 ou 100 registros e default 20.
 
-## Campos Funcionais
+## RLS, Escritas e Auditoria
 
-**Decisão física a confirmar antes da migration:** obrigatoriedade e representação de descrição, data de início, prazo e observações/notas.
+- OWNER acessa Demandas da própria Organization;
+- MEMBER exige Client Assignment atual e segue a matriz congelada;
+- ADMIN é negado nesta Sprint;
+- leitura normal usa Query + RLS;
+- escrita direta é negada;
+- as seis fronteiras de escrita usam RPC com Activity Log atômico;
+- Actions permanecem `CREATED`, `UPDATED`, `STATUS_CHANGED` e `ARCHIVED` em `entity_type = DEMAND`.
 
-## Defaults
+## Itens Fora do Contrato Físico
 
-**Decisão física a confirmar antes da migration:** Status e Prioridade iniciais.
-
-## Prazos
-
-**Decisão física a confirmar antes da migration:** `DATE` ou `TIMESTAMPTZ`, timezone e limiar de “próxima do prazo”.
-
-## Avisos Internos de Prazo
-
-**Decisão física a confirmar antes da migration:** mecanismo backend necessário para cumprir o comportamento funcional, incluindo se haverá persistência, deduplicação, destinatários e ciclo de leitura. Não pressupor tabela `notifications`, scheduler, cron ou worker.
-
-## Documentos
-
-**Decisão física a confirmar antes da migration:** modelo centralizado de metadata e relação com Demandas. Não criar tabela específica antes dessa decisão.
-
-## Pesquisa e Ordenação
-
-**Decisão física a confirmar antes da migration:** campos pesquisáveis, campos ordenáveis e estratégia de índice correspondente.
-
-## RPCs
-
-**Decisão física a confirmar antes da migration:** fronteiras transacionais, nomes, assinaturas, retorno, Grants e necessidade de `SECURITY DEFINER` para cada operação.
-
-## Matriz de Operações
-
-**Decisão funcional obrigatória antes da implementação:** permissões concretas de `ADMIN` e de escrita de `MEMBER` para criar, editar, alterar Status/Prioridade, gerir responsáveis e arquivar.
+- `notifications`, scheduler, cron, worker ou trigger temporal;
+- Documents ou metadata específica de Demandas;
+- threshold de “próxima do prazo”;
+- Full Text Search;
+- troca de Cliente, restauração ou delete físico.
 
 ---
 
@@ -1007,15 +1147,16 @@ A numeração concreta deverá seguir o documento Migrations e a ordem cronológ
 
 O planejamento global identifica conceitualmente a Migration 003 — Demandas, mas nenhum arquivo de migration será criado nesta tarefa.
 
-A migration somente poderá começar após:
+A migration poderá começar seguindo integralmente `docs/04-database/Demands.md`, pois estão congelados:
 
-- aprovação deste planejamento;
-- resolução das decisões físicas abertas;
-- aprovação da matriz de operações de `ADMIN` e `MEMBER`;
-- congelamento do schema;
-- congelamento das Policies;
-- confirmação das operações auditáveis e fronteiras transacionais;
-- confirmação do mecanismo dos avisos internos, inclusive se exigir persistência, e do escopo físico de documentos.
+- schema e relações;
+- matriz de operações de OWNER, ADMIN e MEMBER;
+- integridade e Policies;
+- operações auditáveis e fronteiras transacionais;
+- Queries, ordenação, paginação e índices mínimos;
+- exclusão física de Notifications e Documents desta migration.
+
+A convenção local de comparação de prazo deverá ser decidida antes da implementação do helper temporal. O mecanismo funcional de avisos internos e Documents permanece separado e não bloqueia a migration física de Demandas.
 
 Não editar migrations históricas da Foundation ou da Sprint 02.
 
@@ -1076,7 +1217,7 @@ Filtros funcionalmente previstos:
 - Tags;
 - prazo.
 
-Campos de pesquisa e ordenação deverão ser confirmados antes das Queries. Não criar filtro para campo inexistente.
+A pesquisa inicial utiliza título e descrição. A ordenação utiliza somente a whitelist `created_at`, `updated_at`, `title`, `start_date`, `due_date`, `status` e `priority`, com padrão `updated_at` descendente e desempate por `id` descendente.
 
 Colunas ou informações prioritárias:
 
@@ -1118,7 +1259,7 @@ O formulário deverá suportar:
 - data de início;
 - prazo;
 - Prioridade;
-- Status conforme decisão de default;
+- Status inicial `OPEN`;
 - Tags;
 - observações ou notas.
 
@@ -1151,7 +1292,7 @@ Não incluir áreas de Financeiro, Contratos ou Dashboard consolidado.
 
 A edição deverá suportar somente campos autorizados pelo contrato físico e pela matriz de operações.
 
-A troca do Cliente de uma Demanda existente não será implementada sem decisão explícita de domínio, autorização, auditoria e integridade.
+A troca do Cliente não será implementada. Uma Demanda associada ao Cliente incorreto deverá ser arquivada e recriada corretamente.
 
 Falhas recuperáveis deverão preservar os valores preenchidos.
 
@@ -1280,7 +1421,7 @@ Planejar cobertura real para:
 - isolamento por Client Assignment;
 - responsável sem Client Assignment sem acesso;
 - perda de acesso após remoção do Client Assignment;
-- RPCs reais quando existirem;
+- RPCs reais das seis fronteiras de escrita congeladas;
 - `SECURITY DEFINER`, hardening e Grants quando aplicáveis;
 - tentativa de spoofing de IDs e campos administrativos;
 - Activity Logs e atomicidade;
@@ -1346,7 +1487,7 @@ Não autenticado ou Membership não ACTIVE
 → negado
 ```
 
-Os testes de `ADMIN` deverão seguir somente a matriz aprovada, sem inventar privilégios ou restrições.
+Os testes de `ADMIN` deverão comprovar a negação em todas as operações desta Sprint.
 
 Toda operação protegida deverá possuir Happy Path e Denied Path.
 
@@ -1448,7 +1589,7 @@ Ao final da execução técnica da Sprint deverão existir, conforme o contrato 
 - relações de responsáveis e Tags;
 - RLS e Policies;
 - Queries autorizadas;
-- persistência por Mutation ou RPC conforme necessidade;
+- persistência pelas RPCs transacionais congeladas;
 - Services e Server Actions;
 - lista, cadastro, detalhes e edição;
 - gestão de responsáveis, Status, Prioridade e Tags;
@@ -1463,20 +1604,21 @@ Ao final da execução técnica da Sprint deverão existir, conforme o contrato 
 
 # Checklist Antes de Iniciar a Implementação
 
-- [ ] Planejamento aprovado.
-- [ ] Matriz de operações de `ADMIN` aprovada.
-- [ ] Matriz de escritas de `MEMBER` aprovada.
-- [ ] Schema físico de `demands` congelado.
-- [ ] Schema de responsáveis congelado.
-- [ ] Schema de Tags congelado.
-- [ ] Regras de prazo e timezone congeladas.
-- [ ] Mecanismo backend de avisos internos aprovado, inclusive a decisão sobre eventual persistência.
-- [ ] Escopo físico de documentos confirmado.
-- [ ] Campos de pesquisa e ordenação confirmados.
-- [ ] RLS e Policies planejadas por operação.
-- [ ] Fronteiras de Mutation e RPC definidas.
-- [ ] Actions de Activity Logs confirmadas.
-- [ ] Estratégia e matriz de testes aprovadas.
+- [x] Planejamento funcional e contrato físico aprovados.
+- [x] Matriz de operações de `ADMIN` aprovada.
+- [x] Matriz de escritas de `MEMBER` aprovada.
+- [x] Schema físico de `demands` congelado.
+- [x] Schema de responsáveis congelado.
+- [x] Schema de Tags congelado.
+- [x] Tipos físicos de datas e derivação de atraso congelados.
+- [ ] Convenção local de comparação de prazo aprovada antes do helper temporal.
+- [ ] Mecanismo backend de avisos internos aprovado antes de implementar os alertas, sem bloquear a migration de Demandas.
+- [x] Documents excluídos do contrato físico desta Sprint.
+- [x] Campos de pesquisa e ordenação confirmados.
+- [x] RLS e Policies planejadas por operação.
+- [x] Fronteiras de RPC definidas.
+- [x] Actions de Activity Logs confirmadas.
+- [x] Estratégia e matriz de testes físicos aprovadas.
 
 ---
 
@@ -1489,7 +1631,7 @@ Ao final da execução técnica da Sprint deverão existir, conforme o contrato 
 - [ ] Criar índices necessários.
 - [ ] Aplicar RLS.
 - [ ] Criar Policies.
-- [ ] Implementar RPCs somente quando necessárias.
+- [ ] Implementar as seis fronteiras RPC congeladas.
 - [ ] Endurecer RPCs privilegiadas.
 - [ ] Reutilizar Activity Logs centralizados.
 
@@ -1567,7 +1709,7 @@ Esta Sprint planeja:
 
 ```text
 Sprint 03 — Demandas
-Status: Planejada e tecnicamente não iniciada
+Status: Planejada, com contrato físico aprovado e tecnicamente não iniciada
 ```
 
 O documento deve permanecer sincronizado com as fontes normativas listadas, sem alterar silenciosamente produto, arquitetura, autorização ou persistência.

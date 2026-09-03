@@ -428,11 +428,11 @@ demand_assignees
 demand_tags
 
 demand_tag_assignments
-
-notifications
 ```
 
-A estrutura definitiva deverá ser confirmada antes da implementação da Sprint.
+A estrutura definitiva está congelada em `Demands`.
+
+Nenhuma tabela `notifications` integra a Migration 003.
 
 ---
 
@@ -522,10 +522,14 @@ URGENT
 
 # Notifications
 
-A infraestrutura persistente de notificações internas poderá ser introduzida nesta migration conforme o contrato definitivo da Sprint 03.
+O comportamento funcional de avisos internos permanece na Sprint 03, mas a Migration 003 não cria infraestrutura persistente de Notifications.
 
-Não implementar nesta migration notificações externas como:
+Persistência e mecanismo de entrega exigem contrato específico separado.
 
+Não implementar nesta migration:
+
+- tabela `notifications`;
+- cron, scheduler, worker ou trigger temporal;
 - WhatsApp;
 - SMS;
 - push externo.

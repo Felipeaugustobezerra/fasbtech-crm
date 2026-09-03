@@ -462,11 +462,11 @@ demand_assignees
 demand_tags
 
 demand_tag_assignments
-
-notifications
 ```
 
-As estruturas físicas definitivas serão definidas pela Migration correspondente.
+As estruturas físicas definitivas estão congeladas em `Demands`.
+
+O comportamento funcional de avisos internos permanece na Sprint 03, mas nenhuma tabela `notifications` integra seu contrato físico.
 
 ---
 
@@ -602,17 +602,11 @@ Prioridade é independente de:
 
 # Notifications
 
-`notifications` representa notificações internas geradas pelo sistema.
+`notifications` permanece uma entidade conceitual futura para notificações internas geradas pelo sistema.
 
-Na Sprint 03 sua principal utilização será relacionada a:
+A Sprint 03 não cria essa tabela. Demandas armazenam `due_date`, Status, Cliente e responsáveis suficientes para sustentar o comportamento de avisos internos sem antecipar persistência ou mecanismo de entrega.
 
-```text
-prazos de Demandas
-```
-
-Uma Notification deverá pertencer à Organization e possuir destinatário identificado conforme o modelo de autorização.
-
-A estrutura física definitiva deverá ser definida pela Migration correspondente.
+Quando houver contrato físico próprio, uma Notification deverá pertencer à Organization e possuir destinatário identificado conforme o modelo de autorização.
 
 ---
 
@@ -1160,8 +1154,9 @@ demands
 demand_assignees
 demand_tags
 demand_tag_assignments
-notifications
 ```
+
+O comportamento de avisos internos não introduz tabela `notifications` na Sprint 03.
 
 ---
 
