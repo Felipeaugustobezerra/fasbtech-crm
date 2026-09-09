@@ -40,6 +40,9 @@ describe("Demands list UI", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Demandas" })).toBeVisible();
     expect(screen.getByRole("link", { name: "Nova Demanda" })).toHaveAttribute("href", "/demandas/nova");
     expect(screen.getByRole("table", { name: "Lista de Demandas autorizadas" })).toBeVisible();
+    const detailLinks = screen.getAllByRole("link", { name: item.title });
+    expect(detailLinks).toHaveLength(2);
+    expect(detailLinks.every((link) => link.getAttribute("href") === `/demandas/${item.id}`)).toBe(true);
     for (const text of ["Atualizar website", "Cliente Alfa", "Em andamento", "Alta", "Ana Silva", "Website", "30/09/2026"]) expect(screen.getAllByText(text).length).toBeGreaterThan(0);
     expect(screen.queryByText(/organization_id|created_by|updated_by/i)).toBeNull();
   });

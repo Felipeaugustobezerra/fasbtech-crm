@@ -43,8 +43,10 @@ describe("CreateDemandForm", () => {
     await user.click(screen.getByRole("button", { name: "Criar Demanda" }));
     await waitFor(() => expect(mocks.createDemandAction).toHaveBeenCalledOnce());
     expect(mocks.createDemandAction).toHaveBeenCalledWith(expect.objectContaining({ client_id: clientId, title: "Nova demanda", priority: "MEDIUM", assignee_membership_ids: [firstMember, secondMember] }));
-    expect(mocks.push).toHaveBeenCalledWith("/demandas");
-    expect(mocks.refresh).toHaveBeenCalledOnce();
+    expect(mocks.push).toHaveBeenCalledWith(
+      "/demandas/44444444-4444-4444-8444-444444444444",
+    );
+    expect(mocks.refresh).not.toHaveBeenCalled();
   });
 
   it("supports creation with zero assignees", async () => {

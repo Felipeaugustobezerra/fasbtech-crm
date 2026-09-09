@@ -65,8 +65,7 @@ export function CreateDemandForm({ clients }: Readonly<{ clients: ClientOption[]
         if (!hasFieldError) setFormError(result.error.message);
         return;
       }
-      router.push("/demandas");
-      router.refresh();
+      router.push(`/demandas/${result.data.demandId}`);
     } catch {
       setFormError("Ocorreu um erro inesperado. Tente novamente.");
     }

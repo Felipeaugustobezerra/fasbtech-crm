@@ -62,13 +62,20 @@ export function DemandList({ items, hasFilters, canCreate }: Props) {
     <>
       <div className="space-y-3 md:hidden">
         {items.map((item) => <article key={item.id} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-          <h2 className="font-semibold text-slate-950">{item.title}</h2><p className="mt-1 text-sm text-slate-600">{item.client.name}</p>
+          <h2 className="font-semibold text-slate-950">
+            <Link
+              href={`/demandas/${item.id}`}
+              className="transition hover:text-blue-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+            >
+              {item.title}
+            </Link>
+          </h2><p className="mt-1 text-sm text-slate-600">{item.client.name}</p>
           <div className="mt-4 flex flex-wrap gap-2"><DemandStatusBadge status={item.status} /><DemandPriorityBadge priority={item.priority} /></div>
           <dl className="mt-4 grid gap-3 text-sm"><div><dt className="font-medium text-slate-600">Prazo</dt><dd className="mt-1 text-slate-900">{formatCivilDate(item.due_date)}</dd></div><div><dt className="font-medium text-slate-600">Responsáveis</dt><dd className="mt-1 text-slate-900"><Assignees item={item} /></dd></div></dl>
           <div className="mt-4"><Tags item={item} /></div>
         </article>)}
       </div>
-      <div className="hidden overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm md:block"><div className="overflow-x-auto"><table className="w-full min-w-[70rem] border-collapse text-left"><caption className="sr-only">Lista de Demandas autorizadas</caption><thead className="bg-slate-50"><tr>{["Título", "Cliente", "Status", "Prioridade", "Responsáveis", "Tags", "Prazo"].map((label) => <th key={label} scope="col" className="h-13 px-5 text-xs font-semibold uppercase tracking-wide text-slate-600">{label}</th>)}</tr></thead><tbody className="divide-y divide-slate-100">{items.map((item) => <tr key={item.id} className="hover:bg-slate-50"><th scope="row" className="px-5 py-4 text-sm font-semibold text-slate-950">{item.title}</th><td className="px-5 py-4 text-sm text-slate-700">{item.client.name}</td><td className="px-5 py-4"><DemandStatusBadge status={item.status} /></td><td className="px-5 py-4"><DemandPriorityBadge priority={item.priority} /></td><td className="px-5 py-4 text-sm text-slate-700"><Assignees item={item} /></td><td className="px-5 py-4"><Tags item={item} /></td><td className="px-5 py-4 text-sm text-slate-700">{formatCivilDate(item.due_date)}</td></tr>)}</tbody></table></div></div>
+      <div className="hidden overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm md:block"><div className="overflow-x-auto"><table className="w-full min-w-[70rem] border-collapse text-left"><caption className="sr-only">Lista de Demandas autorizadas</caption><thead className="bg-slate-50"><tr>{["Título", "Cliente", "Status", "Prioridade", "Responsáveis", "Tags", "Prazo"].map((label) => <th key={label} scope="col" className="h-13 px-5 text-xs font-semibold uppercase tracking-wide text-slate-600">{label}</th>)}</tr></thead><tbody className="divide-y divide-slate-100">{items.map((item) => <tr key={item.id} className="hover:bg-slate-50"><th scope="row" className="px-5 py-4 text-sm font-semibold text-slate-950"><Link href={`/demandas/${item.id}`} className="transition hover:text-blue-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700">{item.title}</Link></th><td className="px-5 py-4 text-sm text-slate-700">{item.client.name}</td><td className="px-5 py-4"><DemandStatusBadge status={item.status} /></td><td className="px-5 py-4"><DemandPriorityBadge priority={item.priority} /></td><td className="px-5 py-4 text-sm text-slate-700"><Assignees item={item} /></td><td className="px-5 py-4"><Tags item={item} /></td><td className="px-5 py-4 text-sm text-slate-700">{formatCivilDate(item.due_date)}</td></tr>)}</tbody></table></div></div>
     </>
   );
 }
