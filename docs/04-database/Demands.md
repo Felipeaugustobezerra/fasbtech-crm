@@ -89,7 +89,7 @@ Também deverá:
 - ativar RLS nas quatro novas tabelas;
 - criar Policies e Grants de menor privilégio;
 - criar helpers privados de autorização quando necessários;
-- criar as RPCs transacionais aprovadas;
+- criar as RPCs transacionais e de leitura mínima aprovadas;
 - ampliar a leitura autorizada de `activity_logs` para `entity_type = DEMAND`;
 - ampliar os domínios físicos de auditoria somente se a constraint atual exigir.
 
@@ -608,6 +608,8 @@ Permanecem fora do escopo:
 - delete global de Tag;
 - administração independente do catálogo.
 
+Não existe `listDemandTags()` global nem leitura ou interface independente do catálogo organizacional de Tags nesta Sprint. A aplicação poderá exibir e remover Tags já associadas à Demanda, reutilizar IDs conhecidos no contexto e enviar novos nomes. `set_demand_tags` permanece responsável por normalizar, reutilizar ou criar Tags durante a gestão autorizada da Demanda.
+
 ---
 
 # Tabela `demand_tag_assignments`
@@ -991,7 +993,32 @@ não recebe acesso
 pode ser removido por set_demand_assignees
 ```
 
-Nem `list_eligible_demand_assignees` nem `list_demand_assignees` autorizam acesso a Cliente ou Demanda e nenhuma delas permite enumerar Memberships fora do recurso autorizado.
+## Leitura em Lote para a Listagem
+
+`list_demand_assignees_bulk(p_demand_ids uuid[])` evita N+1 ao carregar os responsáveis legíveis das Demandas da página atual.
+
+O retorno mínimo será:
+
+```text
+demand_id
+membership_id
+full_name
+role
+is_currently_eligible
+```
+
+A autorização será recalculada individualmente para cada `demand_id`, sempre pelo acesso atual à própria Demanda:
+
+- OWNER ativo poderá ler Demandas autorizadas da própria Organization;
+- MEMBER ativo exigirá Client Assignment atual para o Cliente;
+- MEMBER sem Client Assignment, assignee histórico sem Client Assignment, ADMIN, outra Organization e `anon` não receberão dados;
+- assignee nunca será utilizado como prova de autorização.
+
+Um array com IDs autorizados, não autorizados e inexistentes retornará silenciosamente somente os autorizados, sem revelar diferença entre inexistência e falta de acesso. Para uma Demanda autorizada, responsáveis históricos permanecerão visíveis com a mesma semântica da RPC individual e poderão apresentar `is_currently_eligible = false`.
+
+A função será `STABLE`, `SECURITY DEFINER`, utilizará `SET search_path = ''`, `auth.uid()` interno e schemas explícitos, terá `EXECUTE` somente para `authenticated` e não exigirá ampliar Policies globais.
+
+As três RPCs mínimas de leitura — `list_eligible_demand_assignees`, `list_demand_assignees` e `list_demand_assignees_bulk` — não autorizam acesso a Cliente ou Demanda e não permitem enumerar Memberships fora do recurso autorizado.
 
 ---
 
@@ -1023,6 +1050,16 @@ A listagem deverá:
 - não receber `organization_id`, role ou identidade como filtro de segurança;
 - usar desempate estável por `id`;
 - retornar somente relações autorizadas.
+
+Os responsáveis legíveis serão carregados em duas operações totais:
+
+```text
+1 Query paginada de Demandas
++
+1 chamada list_demand_assignees_bulk somente com os IDs retornados na página
+```
+
+A RPC individual não será chamada uma vez por linha. Se a página estiver vazia, a RPC bulk não será chamada.
 
 ## Pesquisa
 
@@ -1294,8 +1331,9 @@ Nenhum teste é criado neste planejamento.
 - listagem, detalhe, contagem e relações sem Data Leakage;
 - Activity Logs sem Data Leakage;
 - candidatos elegíveis retornam somente OWNER e MEMBER autorizados para o Cliente;
-- responsáveis já vinculados retornam somente projeção mínima a quem acessa a Demanda;
+- responsáveis já vinculados retornam somente projeção mínima, no detalhe e em lote, a quem acessa a Demanda;
 - responsável histórico aparece como não elegível sem receber acesso;
+- array bulk misto retorna somente Demandas autorizadas, sem distinguir ID inexistente de não autorizado;
 - consulta arbitrária por `membership_id` e enumeração de Profiles/Memberships são negadas.
 
 ## Escritas e RPCs
@@ -1339,6 +1377,8 @@ Nenhum teste é criado neste planejamento.
 - paginação e total autorizados;
 - arquivados excluídos por padrão;
 - coleção vazia;
+- uma única RPC bulk por página e nenhuma chamada bulk para coleção vazia;
+- ausência de N+1 na leitura de responsáveis da listagem;
 - nenhuma filtragem de autorização em memória.
 
 ---
@@ -1355,7 +1395,7 @@ Nenhum teste é criado neste planejamento.
 - Cliente imutável;
 - arquivamento lógico;
 - preservação do assignee após remoção de acesso;
-- leitura de candidatos e responsáveis vinculados por RPCs mínimas, sem ampliar Policies de Profiles ou Memberships;
+- leitura de candidatos, responsáveis no detalhe e responsáveis em lote por RPCs mínimas, sem ampliar Policies de Profiles ou Memberships;
 - Tags por Organization com unicidade case-insensitive após trim;
 - Tag Assignment sem UUID próprio;
 - criação inline de Tag somente por `set_demand_tags`;

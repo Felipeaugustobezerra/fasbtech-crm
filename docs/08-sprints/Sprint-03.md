@@ -415,7 +415,9 @@ role
 is_currently_eligible
 ```
 
-As duas leituras serão RPCs mínimas endurecidas porque as Policies globais de Profiles e Memberships não serão ampliadas para alimentar seletores. Nenhuma delas aceitará consulta arbitrária por `membership_id`, listará outras Organizations ou concederá acesso ao responsável histórico.
+Para a listagem paginada, `list_demand_assignees_bulk(p_demand_ids uuid[])` receberá somente IDs retornados na página e acrescentará `demand_id` à mesma projeção mínima. A autorização será recalculada para cada Demanda: OWNER ativo seguirá o acesso da própria Organization; MEMBER ativo exigirá Client Assignment atual; MEMBER sem Assignment, assignee histórico sem Assignment, ADMIN, outra Organization e `anon` não receberão dados. Arrays mistos retornarão silenciosamente apenas os IDs autorizados, sem distinguir inexistência de falta de acesso. Responsáveis históricos poderão aparecer com `is_currently_eligible = false` somente quando o chamador mantiver acesso atual à Demanda.
+
+As três leituras serão RPCs mínimas endurecidas porque as Policies globais de Profiles e Memberships não serão ampliadas para alimentar seletores. Serão `SECURITY DEFINER`, utilizarão `SET search_path = ''`, `auth.uid()` interno, schemas explícitos e `EXECUTE` somente para `authenticated`; a bulk será também `STABLE`. Nenhuma aceitará consulta arbitrária por `membership_id`, listará outras Organizations ou utilizará assignee como autorização.
 
 ---
 
@@ -559,6 +561,8 @@ administração independente do catálogo
 ```
 
 Remover a última associação não excluirá automaticamente uma Tag órfã.
+
+Não existe `listDemandTags()` global nem catálogo organizacional de Tags exposto ao MEMBER nesta Sprint. A interface poderá mostrar e remover Tags já associadas à Demanda, reutilizar IDs conhecidos no contexto e enviar novos nomes; `set_demand_tags` continuará responsável por normalizar, reutilizar ou criar Tags.
 
 ---
 
@@ -921,9 +925,12 @@ RPC não será utilizada por padrão para leitura simples.
 Exceções aprovadas:
 
 - `list_eligible_demand_assignees(client_id)` retorna candidatos elegíveis com projeção mínima;
-- `list_demand_assignees(demand_id)` retorna somente responsáveis vinculados à Demanda acessível, incluindo o estado derivado de elegibilidade atual.
+- `list_demand_assignees(demand_id)` retorna somente responsáveis vinculados à Demanda acessível no detalhe, incluindo o estado derivado de elegibilidade atual;
+- `list_demand_assignees_bulk(demand_ids)` retorna, para a listagem, somente responsáveis de Demandas atualmente autorizadas entre os IDs da página.
 
-Essas RPCs evitam abrir leitura geral de Profiles e Memberships. Ambas deverão recalcular autorização internamente, impedir enumeração arbitrária e retornar somente os campos congelados no contrato `Demands`.
+Essas RPCs evitam abrir leitura geral de Profiles e Memberships. As três deverão recalcular autorização internamente, impedir enumeração arbitrária e retornar somente os campos congelados no contrato `Demands`.
+
+A listagem utilizará exatamente uma Query paginada de Demandas e, quando houver resultados, uma única chamada bulk somente com os IDs retornados nessa página. Não haverá chamada individual por linha nem chamada bulk para página vazia. O detalhe de uma única Demanda continuará utilizando `list_demand_assignees(demand_id)`.
 
 ## Escritas
 
@@ -1097,9 +1104,10 @@ O contrato completo está em `docs/04-database/Demands.md`.
 - `demand_tag_assignments` usa Primary Key composta e não possui UUID;
 - `demand_assignees` possui unicidade por Demanda e Membership;
 - a associação é preservada após a remoção do Client Assignment, sem conceder autorização;
-- candidatos e responsáveis vinculados são expostos somente pelas duas RPCs mínimas aprovadas, sem ampliar Policies globais;
+- candidatos, responsáveis no detalhe e responsáveis em lote são expostos somente pelas três RPCs mínimas aprovadas, sem ampliar Policies globais;
 - Tags pertencem à Organization e usam unicidade por nome normalizado;
 - `set_demand_tags` aceita Tags existentes e novos nomes, reutiliza ou cria dentro da Organization e substitui associações atomicamente;
+- não existe `listDemandTags()` global nem catálogo organizacional exposto ao MEMBER nesta Sprint;
 - rename, delete, administração independente e limpeza automática de Tags órfãs não integram a Sprint;
 - relações cross-Organization não demonstráveis por FK usam trigger privado e validação da RPC.
 
@@ -1421,6 +1429,10 @@ Planejar cobertura real para:
 - isolamento por Client Assignment;
 - responsável sem Client Assignment sem acesso;
 - perda de acesso após remoção do Client Assignment;
+- leitura bulk de responsáveis para OWNER e MEMBER autorizado, incluindo histórico e projeção mínima;
+- negação da bulk para MEMBER sem Assignment, assignee histórico sem Assignment, ADMIN, outra Organization e `anon`;
+- arrays bulk autorizados e mistos sem Data Leakage, com hardening e Grants restritos;
+- uma única chamada bulk por página e nenhuma chamada para página vazia, sem N+1;
 - RPCs reais das seis fronteiras de escrita congeladas;
 - `SECURITY DEFINER`, hardening e Grants quando aplicáveis;
 - tentativa de spoofing de IDs e campos administrativos;

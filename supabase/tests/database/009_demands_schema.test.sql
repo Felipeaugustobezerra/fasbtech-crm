@@ -8,7 +8,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(78);
+select plan(79);
 
 
 -- ============================================================
@@ -348,6 +348,7 @@ select has_function('public', 'set_demand_tags', array['uuid', 'uuid[]', 'text[]
 select has_function('public', 'archive_demand', array['uuid'], 'archive_demand deve existir');
 select has_function('public', 'list_eligible_demand_assignees', array['uuid'], 'list_eligible_demand_assignees deve existir');
 select has_function('public', 'list_demand_assignees', array['uuid'], 'list_demand_assignees deve existir');
+select has_function('public', 'list_demand_assignees_bulk', array['uuid[]'], 'list_demand_assignees_bulk deve existir');
 
 
 -- ============================================================
@@ -377,7 +378,8 @@ select ok(
         'set_demand_tags',
         'archive_demand',
         'list_eligible_demand_assignees',
-        'list_demand_assignees'
+        'list_demand_assignees',
+        'list_demand_assignees_bulk'
       )
       and grantee in ('PUBLIC', 'anon')
       and privilege_type = 'EXECUTE'
@@ -398,13 +400,14 @@ select is(
         'set_demand_tags',
         'archive_demand',
         'list_eligible_demand_assignees',
-        'list_demand_assignees'
+        'list_demand_assignees',
+        'list_demand_assignees_bulk'
       )
       and grantee = 'authenticated'
       and privilege_type = 'EXECUTE'
   ),
-  8::bigint,
-  'authenticated deve executar exatamente as oito RPCs públicas'
+  9::bigint,
+  'authenticated deve executar exatamente as nove RPCs públicas'
 );
 
 select ok(
@@ -422,7 +425,8 @@ select ok(
         'set_demand_tags',
         'archive_demand',
         'list_eligible_demand_assignees',
-        'list_demand_assignees'
+        'list_demand_assignees',
+        'list_demand_assignees_bulk'
       )
       and not procedure.prosecdef
   ),
@@ -445,6 +449,7 @@ select ok(
         'archive_demand',
         'list_eligible_demand_assignees',
         'list_demand_assignees',
+        'list_demand_assignees_bulk',
         'is_eligible_demand_assignee',
         'can_access_demand',
         'can_access_demand_tag',
