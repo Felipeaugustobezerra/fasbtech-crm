@@ -4,6 +4,7 @@ import {
   archiveDemandAction,
   changeDemandStatusAction,
   createDemandAction,
+  getEligibleDemandAssigneesAction,
   setDemandAssigneesAction,
   setDemandTagsAction,
   updateDemandAction,
@@ -17,8 +18,10 @@ const mocks = vi.hoisted(() => ({
   setDemandTags: vi.fn(),
   archiveDemand: vi.fn(),
 }));
+const queryMocks = vi.hoisted(() => ({ listEligibleDemandAssignees: vi.fn() }));
 
 vi.mock("@/services/demands/demand.service", () => mocks);
+vi.mock("@/lib/demands/queries", () => queryMocks);
 
 const id = "11111111-1111-4111-8111-111111111111";
 const secondId = "22222222-2222-4222-8222-222222222222";
@@ -30,6 +33,7 @@ describe("demand actions", () => {
     for (const mock of Object.values(mocks)) {
       mock.mockReset().mockResolvedValue(id);
     }
+    queryMocks.listEligibleDemandAssignees.mockReset().mockResolvedValue([]);
   });
 
   it("creates with normalized content, civil dates and multiple assignees", async () => {
@@ -206,5 +210,26 @@ describe("demand actions", () => {
     expect(await createDemandAction({ client_id: id, title: "Demanda" })).toEqual({
       success: false, error: { code: "UNEXPECTED_ERROR", message: "Ocorreu um erro inesperado. Tente novamente." },
     });
+  });
+
+  it("returns only eligible assignees from the existing secure Query", async () => {
+    const assignees = [{ membership_id: secondId, full_name: "Ana", role: "MEMBER" }];
+    queryMocks.listEligibleDemandAssignees.mockResolvedValue(assignees);
+    expect(await getEligibleDemandAssigneesAction(id)).toEqual({ success: true, data: { assignees } });
+    expect(queryMocks.listEligibleDemandAssignees).toHaveBeenCalledExactlyOnceWith(id);
+  });
+
+  it("validates the Client ID before eligible assignee lookup", async () => {
+    expect(await getEligibleDemandAssigneesAction("invalid")).toMatchObject({
+      success: false, error: { code: "VALIDATION_ERROR", fieldErrors: { client_id: ["Informe um Cliente válido."] } },
+    });
+    expect(queryMocks.listEligibleDemandAssignees).not.toHaveBeenCalled();
+  });
+
+  it("sanitizes eligible assignee lookup errors", async () => {
+    queryMocks.listEligibleDemandAssignees.mockRejectedValue(new Error("private database details"));
+    const result = await getEligibleDemandAssigneesAction(id);
+    expect(result).toEqual({ success: false, error: { code: "DATABASE_ERROR", message: "Não foi possível carregar os responsáveis elegíveis." } });
+    expect(JSON.stringify(result)).not.toContain("private database details");
   });
 });

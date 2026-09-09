@@ -335,7 +335,7 @@ describe("access UI", () => {
     expect(reset).toHaveBeenCalledOnce();
   });
 
-  it("enables only the Access navigation among future modules", () => {
+  it("enables Access and Demand navigation while future modules stay disabled", () => {
     render(
       <AppShell
         organizationName="FASBtech"
@@ -353,7 +353,13 @@ describe("access UI", () => {
       expect(link).toHaveAttribute("href", "/acessos");
     }
 
-    for (const label of ["Demandas", "Financeiro", "Contratos"]) {
+    const demandLinks = screen.getAllByRole("link", { name: "Demandas" });
+    expect(demandLinks).toHaveLength(2);
+    for (const link of demandLinks) {
+      expect(link).toHaveAttribute("href", "/demandas");
+    }
+
+    for (const label of ["Financeiro", "Contratos"]) {
       const disabledItems = screen.getAllByText(label);
 
       for (const item of disabledItems) {

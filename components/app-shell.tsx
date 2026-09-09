@@ -21,7 +21,7 @@ const navigation = [
   {
     label: "Demandas",
     href: "/demandas",
-    enabled: false,
+    enabled: true,
   },
   {
     label: "Financeiro",

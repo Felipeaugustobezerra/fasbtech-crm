@@ -19,6 +19,8 @@ import {
   setDemandTags,
   updateDemand,
 } from "@/services/demands/demand.service";
+import { listEligibleDemandAssignees } from "@/lib/demands/queries";
+import type { EligibleDemandAssignee } from "@/types/demand";
 
 type DemandActionErrorCode =
   | "VALIDATION_ERROR"
@@ -31,6 +33,17 @@ type DemandActionErrorCode =
 
 export type DemandActionResult =
   | { success: true; data: { demandId: string } }
+  | {
+      success: false;
+      error: {
+        code: DemandActionErrorCode;
+        message: string;
+        fieldErrors?: Record<string, string[]>;
+      };
+    };
+
+export type EligibleDemandAssigneesActionResult =
+  | { success: true; data: { assignees: EligibleDemandAssignee[] } }
   | {
       success: false;
       error: {
@@ -153,4 +166,34 @@ export async function archiveDemandAction(input: unknown): Promise<DemandActionR
   const parsed = archiveDemandSchema.safeParse(input);
   if (!parsed.success) return validationFailure(parsed.error);
   return executeDemandAction(() => archiveDemand(parsed.data));
+}
+
+export async function getEligibleDemandAssigneesAction(
+  clientId: string,
+): Promise<EligibleDemandAssigneesActionResult> {
+  const parsed = z.uuid("Informe um Cliente válido.").safeParse(clientId);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      error: {
+        code: "VALIDATION_ERROR",
+        message: errorMessages.VALIDATION_ERROR,
+        fieldErrors: { client_id: ["Informe um Cliente válido."] },
+      },
+    };
+  }
+
+  try {
+    const assignees = await listEligibleDemandAssignees(parsed.data);
+    return { success: true, data: { assignees } };
+  } catch {
+    return {
+      success: false,
+      error: {
+        code: "DATABASE_ERROR",
+        message: "Não foi possível carregar os responsáveis elegíveis.",
+      },
+    };
+  }
 }
