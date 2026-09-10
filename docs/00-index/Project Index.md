@@ -441,6 +441,7 @@ Compreender:
 - [[docs/04-database/Migrations]]
 - [[docs/04-database/Migration-001]]
 - [[docs/04-database/Bootstrap]]
+- [[docs/04-database/Demands]]
 
 ---
 
@@ -840,6 +841,7 @@ Compreender:
 
 - [[docs/08-sprints/Sprint-01]]
 - [[docs/08-sprints/Sprint-02]]
+- [[docs/08-sprints/Sprint-03]]
 
 ---
 
@@ -884,6 +886,23 @@ Auditoria correspondente
 
 ---
 
+# Sprint 03 — Demandas
+
+Status: Concluída
+
+Responsável por:
+
+```text
+Demandas
+Responsáveis
+Tags
+Autorização por Cliente
+RLS correspondente
+Activity Logs correspondentes
+```
+
+---
+
 # Sprints Planejadas
 
 A sequência funcional aprovada é:
@@ -910,6 +929,13 @@ Sprint 05 — Contratos
 ↓
 
 Sprint 06 — Dashboard
+```
+
+Próxima Sprint:
+
+```text
+Sprint 04 — Financeiro
+Status: Não iniciada
 ```
 
 Documentos específicos das Sprints futuras somente deverão ser criados quando o processo oficial exigir.
@@ -1239,7 +1265,9 @@ Este documento deverá permanecer sincronizado com:
 - Testing Strategy;
 - Implementation Guide;
 - Sprint 01 v3.0;
-- Sprint 02 v3.0.
+- Sprint 02 v3.0;
+- Sprint 03 v3.0;
+- Demands v3.0.
 
 ---
 
@@ -1253,6 +1281,7 @@ Antes de considerar este documento atualizado verificar:
 - [ ] Projects deixaram de aparecer como módulo atual?
 - [ ] Sprint 01 está correta?
 - [ ] Sprint 02 está correta?
+- [ ] Sprint 03 está correta?
 - [ ] Roadmap de Sprints está correto?
 - [ ] Migrations está identificada como fonte de evolução persistente?
 - [ ] Migration 001 está limitada à Foundation?
@@ -1273,7 +1302,7 @@ O Project Index será considerado atualizado quando:
 - a ordem de leitura estiver sincronizada com o MVP v3.0;
 - a hierarquia documental estiver coerente;
 - as fontes da verdade de cada domínio estiverem explícitas;
-- Sprint 01 e Sprint 02 estiverem atualizadas;
+- Sprint 01, Sprint 02 e Sprint 03 estiverem atualizadas;
 - o Roadmap de Sprints estiver correto;
 - a estratégia de migrations estiver corretamente representada;
 - Leads e Projects não forem tratados como módulos atuais;

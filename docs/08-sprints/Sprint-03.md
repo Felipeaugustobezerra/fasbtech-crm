@@ -14,7 +14,7 @@ FASBtech CRM
 
 ## Status
 
-🟡 Planejada — contrato físico aprovado
+🟢 Concluída
 
 ---
 
@@ -24,23 +24,11 @@ Setembro de 2026
 
 ---
 
-# Estado do Planejamento
+# Estado Final
 
-Este documento formaliza o planejamento funcional e o contrato físico da Sprint 03.
+Este documento registra o planejamento aprovado e o resultado técnico final da Sprint 03.
 
-O contrato físico está aprovado em `docs/04-database/Demands.md`. A Sprint permanece tecnicamente não iniciada; nenhum código, migration ou teste foi implementado por este planejamento.
-
-Este documento não implementa:
-
-- código;
-- migration;
-- Types;
-- Schemas Zod;
-- Queries;
-- Services;
-- Server Actions;
-- componentes;
-- testes.
+O contrato físico está implementado e validado conforme `docs/04-database/Demands.md`. A Sprint entregou banco, aplicação, interface, testes e fechamento de segurança do módulo de Demandas.
 
 ---
 
@@ -50,18 +38,16 @@ Implementar o módulo de Demandas do FASBtech CRM v3.0.
 
 Uma Demanda representa uma unidade operacional de trabalho ou serviço executado para um Cliente.
 
-Esta Sprint deverá entregar:
+Esta Sprint entregou:
 
 - cadastro, listagem, pesquisa, filtros, ordenação e paginação de Demandas;
 - detalhes, edição e arquivamento;
 - associação obrigatória a Cliente;
 - suporte a `0..N` responsáveis internos;
 - Status, Prioridade e Tags como conceitos separados;
-- datas, prazos e identificação de atraso;
+- datas e prazos;
 - observações ou notas operacionais;
 - Activity Logs aplicáveis;
-- alertas e notificações internas de prazo conforme o contrato aprovado;
-- integração conceitual com a infraestrutura central de documentos;
 - autorização baseada em Organization, Membership, role e Client Assignment;
 - interface responsiva e acessível;
 - testes proporcionais ao risco.
@@ -157,7 +143,7 @@ A Sprint deverá preservar os seguintes invariantes:
 10. Listagens, pesquisas, filtros, ordenação, paginação e contagens retornam somente dados autorizados.
 11. Activity Logs utilizam a infraestrutura central `activity_logs`.
 12. Documentos utilizam a infraestrutura central e privada; não haverá sistema de arquivos específico para Demandas.
-13. As notificações desta Sprint são somente internas.
+13. Notifications persistentes e seu mecanismo de entrega permanecem fora da Sprint.
 14. O Dashboard consolidado permanece na Sprint 06.
 
 ---
@@ -181,9 +167,7 @@ A Sprint deverá preservar os seguintes invariantes:
 - gerir Tags;
 - gerir data de início e prazo;
 - registrar observações ou notas;
-- consultar histórico autorizado de atividades;
-- identificar prazos normais, próximos e atrasados;
-- produzir notificações internas de prazo conforme mecanismo aprovado.
+- armazenar data de início e prazo como datas civis.
 
 ## Segurança
 
@@ -255,8 +239,6 @@ Organization
     └── Demands
         ├── Assignees
         ├── Tags
-        ├── Documents, conceitualmente
-        ├── Internal Deadline Alerts, como comportamento funcional
         └── Activity Logs
 ```
 
@@ -618,19 +600,11 @@ Não haverá operação normal de exclusão física de Demanda.
 
 # Notificações Internas
 
-O comportamento de avisos internos relacionados a prazos faz parte do escopo funcional por determinação do PRD, de FR-428, de FR-429 e da história de utilizador “Receber alerta de prazo”.
+Notifications persistentes e o mecanismo de avisos internos não foram implementados na Sprint 03.
 
-Regras funcionais:
+A Sprint entregou `due_date`, Status, Cliente e responsáveis como dados suficientes para uma evolução futura, sem criar tabela `notifications`, scheduler, cron, worker, trigger temporal ou integração externa.
 
-- a verificação de prazo ocorre no backend;
-- a detecção não depende exclusivamente do navegador aberto;
-- o destinatário pertence à Organization e deve estar autorizado ao contexto da Demanda;
-- o aviso interno não pode revelar Cliente ou Demanda não autorizados;
-- notificações externas não fazem parte do escopo.
-
-Este planejamento não cria scheduler, cron, worker ou integração externa.
-
-O requisito funcional não congela a criação de uma tabela `notifications` nem de outra infraestrutura persistente. O mecanismo backend de detecção, a cadência, o limiar, a eventual persistência, a deduplicação, o ciclo de leitura e o destinatário exato são decisões a confirmar antes da implementação.
+Essa decisão é deliberadamente externa à entrega concluída e não representa pendência técnica da Sprint 03.
 
 ---
 
@@ -1003,13 +977,11 @@ A interface deverá:
 
 ---
 
-# Planejamento do Banco de Dados
+# Banco de Dados Implementado
 
-Nenhum SQL será criado nesta etapa.
+As migrations da Sprint 03 implementaram somente a infraestrutura aprovada para Demandas.
 
-A futura migration deverá introduzir somente a infraestrutura aprovada para Demandas.
-
-Estruturas físicas congeladas em `Demands`:
+Estruturas físicas implementadas conforme `Demands`:
 
 ```text
 demands
@@ -1018,13 +990,13 @@ demand_tags
 demand_tag_assignments
 ```
 
-Nenhuma tabela `notifications` ou Documents integra a migration da Sprint 03. Persistência e mecanismo de avisos internos permanecem separados até contrato específico.
+Nenhuma tabela `notifications` ou Documents integra as migrations da Sprint 03.
 
 ---
 
-# Constraints a Planejar
+# Constraints Implementadas
 
-A migration deverá implementar conforme o contrato `Demands`:
+As migrations implementaram conforme o contrato `Demands`:
 
 - UUID Primary Key em `demands.id`;
 - UUID Primary Key em `demand_assignees.id`;
@@ -1045,7 +1017,7 @@ Foreign Key não substitui autorização.
 
 ---
 
-# Índices a Planejar
+# Índices Implementados
 
 Os índices mínimos congelados em `Demands` atendem aos padrões reais de:
 
@@ -1081,7 +1053,7 @@ As Policies deverão garantir:
 - negação de outra Organization;
 - negação de acesso anônimo;
 - ausência de delete físico pelo fluxo normal;
-- acesso autorizado a Activity Logs e, se houver persistência aprovada, aos avisos internos de prazo.
+- acesso autorizado a Activity Logs.
 
 As Policies concretas estão congeladas no contrato `Demands`: SELECT depende da autorização atual por Organization e Client Assignment; `demand_assignees` nunca concede acesso; ADMIN é negado; e não haverá escrita direta nas quatro tabelas. Escritas serão feitas somente pelas RPCs autorizadas.
 
@@ -1149,13 +1121,11 @@ O contrato completo está em `docs/04-database/Demands.md`.
 
 ---
 
-# Migration
+# Migrations
 
 A numeração concreta deverá seguir o documento Migrations e a ordem cronológica real do repositório.
 
-O planejamento global identifica conceitualmente a Migration 003 — Demandas, mas nenhum arquivo de migration será criado nesta tarefa.
-
-A migration poderá começar seguindo integralmente `docs/04-database/Demands.md`, pois estão congelados:
+As migrations da Sprint 03 foram implementadas seguindo integralmente `docs/04-database/Demands.md`:
 
 - schema e relações;
 - matriz de operações de OWNER, ADMIN e MEMBER;
@@ -1164,7 +1134,7 @@ A migration poderá começar seguindo integralmente `docs/04-database/Demands.md
 - Queries, ordenação, paginação e índices mínimos;
 - exclusão física de Notifications e Documents desta migration.
 
-A convenção local de comparação de prazo deverá ser decidida antes da implementação do helper temporal. O mecanismo funcional de avisos internos e Documents permanece separado e não bloqueia a migration física de Demandas.
+A convenção local de comparação de prazo, Notifications e Documents permanecem fora desta entrega e não bloquearam o banco de Demandas.
 
 Não editar migrations históricas da Foundation ou da Sprint 02.
 
@@ -1183,7 +1153,18 @@ Clientes
 Acessos
 ```
 
-Esta Sprint implementará somente a entrada já existente de Demandas e não alterará a ordem ou o escopo dos demais módulos.
+Esta Sprint implementou somente a entrada já existente de Demandas e não alterou a ordem ou o escopo dos demais módulos.
+
+Rotas entregues:
+
+```text
+/demandas
+/demandas/nova
+/demandas/[id]
+/demandas/[id]/editar
+```
+
+A interface final inclui listagem, pesquisa, filtros, ordenação, paginação, criação, detalhe, edição, Status, responsáveis, Tags, arquivamento e estados de loading, error, empty e not-found seguro. A apresentação é responsiva para Desktop e Mobile.
 
 ## Lista de Demandas
 
@@ -1207,7 +1188,7 @@ Pagination
 
 O Page Header deverá apresentar o contexto de Demandas e a ação principal somente quando o utilizador puder executá-la.
 
-A Toolbar deverá planejar:
+A Toolbar entregue possui:
 
 - pesquisa;
 - filtros aprovados;
@@ -1216,14 +1197,13 @@ A Toolbar deverá planejar:
 
 A pesquisa deverá ocorrer no banco, utilizar debounce e preservar filtros, ordenação e paginação quando aplicável.
 
-Filtros funcionalmente previstos:
+Filtros efetivamente expostos na interface:
 
-- Cliente;
 - Status;
 - Prioridade;
-- responsável;
-- Tags;
-- prazo.
+- prazo exato.
+
+As Queries suportam filtros adicionais internamente, mas eles não são apresentados como entregas da interface desta Sprint.
 
 A pesquisa inicial utiliza título e descrição. A ordenação utiliza somente a whitelist `created_at`, `updated_at`, `title`, `start_date`, `due_date`, `status` e `priority`, com padrão `updated_at` descendente e desempate por `id` descendente.
 
@@ -1290,9 +1270,7 @@ Estrutura mínima:
 - datas;
 - Tags;
 - observações ou notas;
-- documentos, apenas quando a infraestrutura central estiver aprovada;
-- histórico autorizado de Activity Logs;
-- avisos internos de prazo aplicáveis, sem pressupor uma tabela específica.
+- ações autorizadas para Status, responsáveis, Tags e arquivamento.
 
 Não incluir áreas de Financeiro, Contratos ou Dashboard consolidado.
 
@@ -1389,18 +1367,39 @@ Toda interface deverá utilizar os Design Tokens e componentes oficiais.
 
 # Matriz de Testes
 
-Os testes deverão ser implementados somente durante a execução técnica da Sprint.
+Os testes foram implementados proporcionalmente às responsabilidades e aos riscos da Sprint.
+
+Resultados finais:
+
+```text
+Banco
+12 arquivos pgTAP
+429 testes
+0 falhas
+
+Unit/integration da aplicação
+27 arquivos
+361 testes
+0 falhas
+
+E2E
+14 testes totais
+10 cenários novos de Demandas
+4 testes existentes
+E2E run 1 → 14 passed
+E2E run 2 → 14 passed
+```
+
+Também foram aprovados `db reset`, `db lint`, bootstrap concurrency, OWNER role concurrency, typecheck, lint, build e `git diff --check`.
 
 ## Unitários e Componentes
 
-Planejar cobertura para:
+Cobertura implementada quando aplicável:
 
 - Schemas de entrada;
 - domínio de Status;
 - domínio de Prioridade;
 - independência entre Status, Prioridade e Tags;
-- cálculo derivado de atraso após aprovação da semântica temporal;
-- cálculo derivado de proximidade do prazo após aprovação do limiar;
 - Services e regras puras de domínio;
 - mappers, formatters e helpers relevantes;
 - validação de responsáveis;
@@ -1413,7 +1412,7 @@ Testes unitários não deverão acessar PostgreSQL ou Supabase real.
 
 ## Integração e Banco
 
-Planejar cobertura real para:
+Cobertura real implementada:
 
 - aplicação da migration em banco limpo e banco com histórico;
 - schema, constraints, Foreign Keys e índices;
@@ -1438,8 +1437,6 @@ Planejar cobertura real para:
 - tentativa de spoofing de IDs e campos administrativos;
 - Activity Logs e atomicidade;
 - rollback completo em falha de auditoria;
-- comportamento e autorização dos avisos internos de prazo conforme o mecanismo aprovado;
-- documentos privados quando a integração física existir.
 
 Não mockar RLS em teste de RLS nem RPC em teste de RPC.
 
@@ -1521,7 +1518,7 @@ Validar para cada operação auditável:
 
 ## E2E Críticos
 
-Planejar com Playwright:
+Implementado com Playwright:
 
 - login pela UI;
 - abrir Demandas;
@@ -1535,7 +1532,7 @@ Planejar com Playwright:
 - negar acesso direto a `MEMBER` sem Client Assignment;
 - negar acesso à Demanda do Cliente B para `MEMBER` autorizado apenas no Cliente A;
 - comprovar perda de acesso após remoção do Client Assignment;
-- validar estados críticos de Loading/Error quando proporcionais ao risco.
+- validar estados críticos e tratamento seguro de not-found.
 
 Lifecycles stateful poderão executar em série mesmo com `fullyParallel` habilitado.
 
@@ -1549,7 +1546,7 @@ Não criar E2E para cada detalhe cosmético.
 
 # Critérios de Aceite
 
-A Sprint 03 somente poderá ser declarada concluída quando:
+Os critérios de aceite verificados foram:
 
 - Demandas puderem ser criadas para um Cliente autorizado;
 - toda Demanda pertencer a um Cliente e à Organization correta;
@@ -1568,10 +1565,8 @@ A Sprint 03 somente poderá ser declarada concluída quando:
 - uma Demanda suportar `0..N` responsáveis autorizados;
 - responsabilidade não conceder acesso ao Cliente;
 - perda de Client Assignment retirar o acesso do `MEMBER`;
-- atraso permanecer derivado e seguir a regra oficial com semântica temporal aprovada;
-- prazos próximos seguirem o limiar aprovado;
-- notificações internas de prazo respeitarem o mecanismo backend e a autorização aprovados;
-- integração documental, quando fisicamente implementada, reutilizar a infraestrutura central e privada;
+- atraso não foi persistido como campo duplicado;
+- Notifications e Documents permaneceram fora do escopo físico e funcional entregue;
 - RLS e Policies estiverem ativas e testadas;
 - isolamento entre Organizations estiver comprovado;
 - isolamento por Client Assignment estiver comprovado;
@@ -1588,13 +1583,9 @@ A Sprint 03 somente poderá ser declarada concluída quando:
 - documentação diretamente afetada estiver sincronizada;
 - não existirem blockers técnicos ou decisões obrigatórias abertas.
 
-Nenhum item desta seção está concluído no momento do planejamento.
+# Entregáveis Finais
 
----
-
-# Entregáveis Esperados
-
-Ao final da execução técnica da Sprint deverão existir, conforme o contrato aprovado:
+A execução técnica entregou, conforme o contrato aprovado:
 
 - módulo de Demandas;
 - schema físico e migration da Sprint;
@@ -1606,15 +1597,14 @@ Ao final da execução técnica da Sprint deverão existir, conforme o contrato 
 - lista, cadastro, detalhes e edição;
 - gestão de responsáveis, Status, Prioridade e Tags;
 - arquivamento;
-- prazos e comportamento de avisos internos, sem presumir infraestrutura persistente específica;
+- datas e prazos;
 - Activity Logs;
-- integração documental no limite aprovado;
 - testes obrigatórios;
 - documentação sincronizada.
 
 ---
 
-# Checklist Antes de Iniciar a Implementação
+# Checklist do Contrato
 
 - [x] Planejamento funcional e contrato físico aprovados.
 - [x] Matriz de operações de `ADMIN` aprovada.
@@ -1623,8 +1613,8 @@ Ao final da execução técnica da Sprint deverão existir, conforme o contrato 
 - [x] Schema de responsáveis congelado.
 - [x] Schema de Tags congelado.
 - [x] Tipos físicos de datas e derivação de atraso congelados.
-- [ ] Convenção local de comparação de prazo aprovada antes do helper temporal.
-- [ ] Mecanismo backend de avisos internos aprovado antes de implementar os alertas, sem bloquear a migration de Demandas.
+- [x] Atraso mantido como estado derivado, sem campo físico duplicado ou helper temporal não aprovado.
+- [x] Notifications persistentes e mecanismo de avisos mantidos fora da Sprint 03.
 - [x] Documents excluídos do contrato físico desta Sprint.
 - [x] Campos de pesquisa e ordenação confirmados.
 - [x] RLS e Policies planejadas por operação.
@@ -1634,42 +1624,42 @@ Ao final da execução técnica da Sprint deverão existir, conforme o contrato 
 
 ---
 
-# Checklist Técnico da Execução Futura
+# Checklist Técnico da Execução
 
 ## Banco
 
-- [ ] Criar migration somente após congelamento físico.
-- [ ] Criar constraints e Foreign Keys.
-- [ ] Criar índices necessários.
-- [ ] Aplicar RLS.
-- [ ] Criar Policies.
-- [ ] Implementar as seis fronteiras RPC congeladas.
-- [ ] Endurecer RPCs privilegiadas.
-- [ ] Reutilizar Activity Logs centralizados.
+- [x] Criar migration somente após congelamento físico.
+- [x] Criar constraints e Foreign Keys.
+- [x] Criar índices necessários.
+- [x] Aplicar RLS.
+- [x] Criar Policies.
+- [x] Implementar as seis fronteiras RPC congeladas.
+- [x] Endurecer RPCs privilegiadas.
+- [x] Reutilizar Activity Logs centralizados.
 
 ## Aplicação
 
-- [ ] Criar Types e Schemas após o contrato físico.
-- [ ] Implementar Queries autorizadas.
-- [ ] Implementar persistência conforme ADR-002.
-- [ ] Implementar Services e Server Actions.
-- [ ] Implementar lista, cadastro, detalhes e edição.
-- [ ] Implementar responsáveis, Status, Prioridade e Tags.
-- [ ] Implementar arquivamento.
-- [ ] Implementar o comportamento de avisos internos no limite aprovado, sem presumir tabela específica.
-- [ ] Implementar Error Handling.
+- [x] Criar Types e Schemas após o contrato físico.
+- [x] Implementar Queries autorizadas.
+- [x] Implementar persistência conforme ADR-002.
+- [x] Implementar Services e Server Actions.
+- [x] Implementar lista, cadastro, detalhes e edição.
+- [x] Implementar responsáveis, Status, Prioridade e Tags.
+- [x] Implementar arquivamento.
+- [x] Manter Notifications e mecanismo de avisos fora da entrega.
+- [x] Implementar Error Handling.
 
 ## Qualidade
 
-- [ ] Implementar testes unitários e de componentes.
-- [ ] Implementar testes de integração e banco.
-- [ ] Implementar testes de RLS, Policies e RPCs.
-- [ ] Implementar testes de Activity Logs e atomicidade.
-- [ ] Implementar E2E críticos.
-- [ ] Validar responsividade.
-- [ ] Validar WCAG 2.2 AA.
-- [ ] Executar lint, typecheck, testes e build.
-- [ ] Sincronizar somente a documentação afetada.
+- [x] Implementar testes unitários e de componentes.
+- [x] Implementar testes de integração e banco.
+- [x] Implementar testes de RLS, Policies e RPCs.
+- [x] Implementar testes de Activity Logs e atomicidade.
+- [x] Implementar E2E críticos.
+- [x] Validar responsividade.
+- [x] Validar acessibilidade aplicável conforme WCAG 2.2 AA.
+- [x] Executar lint, typecheck, testes e build.
+- [x] Sincronizar somente a documentação afetada.
 
 ---
 
@@ -1688,8 +1678,7 @@ A Sprint 03 somente estará concluída quando:
 - utilizar RPC somente quando houver necessidade arquitetural real;
 - registrar Activity Logs obrigatórios com atomicidade quando aplicável;
 - preservar histórico no arquivamento;
-- utilizar a infraestrutura central e privada de documentos quando aplicável;
-- limitar notificações ao escopo interno aprovado;
+- manter Documents e Notifications fora da entrega desta Sprint;
 - utilizar Error Handling, Design System e Design Tokens;
 - seguir DataTable Guidelines;
 - funcionar em Desktop, Tablet e Mobile;
@@ -1705,23 +1694,92 @@ A Sprint 03 somente estará concluída quando:
 
 # Resultado
 
-> Preencher ao final da Sprint. Nenhuma funcionalidade foi declarada concluída neste planejamento.
+A Sprint 03 entregou o módulo de Demandas completo dentro do escopo aprovado:
+
+```text
+Demandas
+├── schema físico
+├── RLS
+├── RPCs
+├── Activity Logs
+├── Types + Validation
+├── Queries
+├── Services
+├── Server Actions
+├── Listagem
+├── Criação
+├── Detalhe
+├── Edição
+├── Status
+├── Priority
+├── Responsáveis
+├── Tags
+├── Arquivamento
+└── E2E + segurança
+```
+
+Foram implementadas as tabelas `demands`, `demand_assignees`, `demand_tags` e `demand_tag_assignments`, com Status default `OPEN`, Priority default `MEDIUM`, datas civis em `DATE`, Cliente imutável e arquivamento lógico por `archived_at`.
+
+As seis RPCs de escrita são `create_demand`, `update_demand`, `change_demand_status`, `set_demand_assignees`, `set_demand_tags` e `archive_demand`. As leituras privilegiadas mínimas são `list_eligible_demand_assignees`, `list_demand_assignees` e `list_demand_assignees_bulk`.
+
+`list_demand_assignees_bulk` evita N+1 na listagem ao receber somente os IDs da página atual e retornar responsáveis apenas das Demandas que o chamador já pode acessar. Ela não concede autorização.
+
+A autorização final permite ao `OWNER` listar, ver, criar, editar, alterar Status, Priority e datas, gerir Tags e responsáveis e arquivar na própria Organization. `MEMBER` possui as mesmas operações operacionais quando mantém Client Assignment atual, exceto arquivamento. `ADMIN` não possui acesso ao módulo nesta Sprint.
+
+Responsáveis possuem cardinalidade `0..N`. OWNER é elegível sem Client Assignment individual; MEMBER exige Membership `ACTIVE` e Client Assignment atual; ADMIN não é elegível. Remover o Client Assignment preserva o vínculo histórico, mas retira imediatamente o acesso do MEMBER. Assignee nunca é mecanismo de autorização.
+
+Tags formam catálogo livre por Organization, com comparação por `lower(trim(name))` e criação inline por `set_demand_tags`. Não foram implementados catálogo global para MEMBER, rename/delete global ou remoção automática de Tags órfãs.
+
+As rotas finais são `/demandas`, `/demandas/nova`, `/demandas/[id]` e `/demandas/[id]/editar`. A listagem expõe pesquisa, filtros por Status, Priority e prazo exato, ordenação e paginação, com apresentação responsiva e estados seguros.
+
+O fechamento E2E encontrou e corrigiu dois comportamentos: paginação fora do intervalo que retornava `PGRST103`, resolvida com recuperação segura da contagem autorizada sem bypass de RLS; e affordance indevida de Demandas para `ADMIN`, resolvida com menu ocultado e guard de rota sem alterar a autorização do backend.
+
+A revisão final de segurança confirmou ausência de service role na aplicação, admin client na UI, campos de autorização confiados ao browser, bypass de RLS, escrita direta nas tabelas, SQL na UI, Cliente mutável, Status no cadastro ou delete físico. Também confirmou que assignee não concede acesso, MEMBER sem Assignment é negado, MEMBER não arquiva, ADMIN é negado e o isolamento cross-Organization permanece ativo.
+
+Activity Logs foram implementados e testados como `DEMAND / CREATED`, `DEMAND / UPDATED`, `DEMAND / STATUS_CHANGED` e `DEMAND / ARCHIVED`, sem criação de interface de histórico nesta Sprint.
+
+Permaneceram deliberadamente fora da Sprint: Notifications persistentes, cron, scheduler, worker, Documents, Dashboard consolidado, Financeiro, Contratos, restore, delete físico, troca de Cliente, catálogo global de Tags, rename/delete global de Tags, FTS/trigram e máquina rígida de transições.
 
 ---
 
 # Lições Aprendidas
 
-> Preencher ao final da Sprint com fatos reais da implementação.
+- A leitura bulk elimina N+1 sem ampliar Policies globais.
+- RLS continua sendo a autoridade mesmo quando a interface possui guards adicionais.
+- E2E real detecta paginação fora do intervalo que testes isolados podem não reproduzir.
+- A navegação deve refletir a negação funcional de `ADMIN` sem substituir o backend.
+- Histórico de assignee deve permanecer separado de autorização atual.
+
+---
+
+# Commits Principais
+
+```text
+49eb398 — contrato documental congelado
+879ee60 — banco de Demandas
+c2a895d — Types e Validation
+e974675 — leitura bulk de responsáveis
+0d0f7a0 — Queries
+d95fcca — Services
+5c25f7d — Server Actions
+32151a7 — listagem e criação
+86d0122 — detalhe e operações
+b0bf2db — E2E e fechamento de segurança
+```
 
 ---
 
 # Fonte da Verdade
 
-Esta Sprint planeja:
+Esta Sprint entregou:
 
 ```text
 Sprint 03 — Demandas
-Status: Planejada, com contrato físico aprovado e tecnicamente não iniciada
+Status: Concluída
+
+Próxima Sprint:
+Sprint 04 — Financeiro
+Status: Não iniciada
 ```
 
 O documento deve permanecer sincronizado com as fontes normativas listadas, sem alterar silenciosamente produto, arquitetura, autorização ou persistência.

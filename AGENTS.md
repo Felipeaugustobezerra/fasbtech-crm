@@ -163,15 +163,15 @@ Não antecipar módulos de Sprints futuras.
 # Estado das Sprints
 
 ```text
-Sprint 02 — Clientes & Acessos
+Sprint 03 — Demandas
 Status: Concluída
 
 Próxima Sprint:
-Sprint 03 — Demandas
+Sprint 04 — Financeiro
 Status: Não iniciada
 ```
 
-A Foundation foi concluída na Sprint 01.
+A Foundation foi concluída na Sprint 01 e Clientes & Acessos na Sprint 02.
 
 ---
 

@@ -14,7 +14,7 @@ FASBtech CRM
 
 ## Status
 
-🟢 Contrato físico aprovado para a Sprint 03
+🟢 Implementado e validado na Sprint 03
 
 ---
 
@@ -26,7 +26,7 @@ Setembro de 2026
 
 # Objetivo
 
-Este documento congela o contrato físico do módulo de Demandas antes da migration da Sprint 03.
+Este documento registra o contrato físico implementado pelo módulo de Demandas na Sprint 03.
 
 Ele define:
 
@@ -45,7 +45,7 @@ Ele define:
 - testes físicos obrigatórios;
 - itens deliberadamente fora da migration.
 
-Este documento não implementa SQL.
+O SQL correspondente está versionado nas migrations da Sprint 03.
 
 ---
 
@@ -70,9 +70,9 @@ Em caso de conflito futuro, a implementação deverá parar para sincronizar a d
 
 ---
 
-# Escopo Físico da Migration
+# Escopo Físico Implementado
 
-A migration da Sprint 03 deverá criar:
+As migrations da Sprint 03 criaram:
 
 ```text
 demands
@@ -81,7 +81,7 @@ demand_tags
 demand_tag_assignments
 ```
 
-Também deverá:
+Também implementaram:
 
 - adicionar a constraint de suporte necessária em `clients` para a Foreign Key composta de Demandas;
 - criar constraints e índices deste contrato;
@@ -1258,7 +1258,7 @@ INSERT direto em `activity_logs` permanece negado. UPDATE e DELETE permanecem ne
 
 Nenhuma tabela `notifications` será criada nesta Sprint.
 
-O requisito funcional de avisos internos permanece, mas o contrato físico desta migration apenas garante os dados necessários para sustentá-lo sem definir o mecanismo nesta etapa:
+O contrato físico implementado apenas fornece dados que poderão sustentar avisos internos em evolução futura:
 
 ```text
 due_date
@@ -1267,7 +1267,7 @@ client_id
 demand_assignees
 ```
 
-Persistência e mecanismo de entrega exigem contrato específico posterior.
+Notifications persistentes e qualquer mecanismo de entrega ficaram fora da Sprint 03 e exigem contrato específico posterior.
 
 ---
 
@@ -1279,9 +1279,9 @@ A futura relação Demand ↔ Document deverá reutilizar a infraestrutura centr
 
 ---
 
-# Testes Físicos a Implementar Posteriormente
+# Testes Físicos Implementados
 
-Nenhum teste é criado neste planejamento.
+A validação final executou 12 arquivos pgTAP, totalizando 429 testes sem falhas.
 
 ## Schema
 
@@ -1434,9 +1434,9 @@ A convenção de data local usada para interpretar a expiração deverá ser con
 
 ---
 
-# Conformidade da Implementação Futura
+# Conformidade da Implementação
 
-A migration e sua validação estarão conformes a este contrato quando:
+A conformidade final foi validada nos seguintes pontos:
 
 - nenhuma tabela fora do escopo for criada;
 - as quatro tabelas seguirem exatamente as colunas aprovadas;
@@ -1451,4 +1451,4 @@ A migration e sua validação estarão conformes a este contrato quando:
 - Activity Logs permanecerem centralizados e imutáveis;
 - Queries não causarem Data Leakage;
 - Notifications e Documents não forem antecipados;
-- todos os testes físicos deste documento forem implementados e aprovados na etapa correspondente.
+- todos os testes físicos aplicáveis deste documento foram implementados e aprovados.

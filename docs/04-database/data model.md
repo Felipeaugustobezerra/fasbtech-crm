@@ -450,7 +450,7 @@ Um Cliente não depende de Lead.
 
 # Sprint 03 — Demandas
 
-A Sprint 03 introduzirá o domínio operacional de trabalho.
+A Sprint 03 introduziu o domínio operacional de trabalho.
 
 Entidades conceituais principais:
 
@@ -466,7 +466,7 @@ demand_tag_assignments
 
 As estruturas físicas definitivas estão congeladas em `Demands`.
 
-O comportamento funcional de avisos internos permanece na Sprint 03, mas nenhuma tabela `notifications` integra seu contrato físico.
+Notifications persistentes e o mecanismo de avisos internos ficaram fora da Sprint 03. Nenhuma tabela `notifications` integra seu contrato físico.
 
 ---
 
@@ -604,7 +604,7 @@ Prioridade é independente de:
 
 `notifications` permanece uma entidade conceitual futura para notificações internas geradas pelo sistema.
 
-A Sprint 03 não cria essa tabela. Demandas armazenam `due_date`, Status, Cliente e responsáveis suficientes para sustentar o comportamento de avisos internos sem antecipar persistência ou mecanismo de entrega.
+A Sprint 03 não criou essa tabela. Demandas armazenam `due_date`, Status, Cliente e responsáveis que poderão sustentar avisos internos futuros sem antecipar persistência ou mecanismo de entrega.
 
 Quando houver contrato físico próprio, uma Notification deverá pertencer à Organization e possuir destinatário identificado conforme o modelo de autorização.
 
@@ -1147,7 +1147,7 @@ client_assignments
 
 ## Sprint 03 — Demandas
 
-Conceitualmente:
+Implementado:
 
 ```text
 demands
@@ -1156,7 +1156,7 @@ demand_tags
 demand_tag_assignments
 ```
 
-O comportamento de avisos internos não introduz tabela `notifications` na Sprint 03.
+Notifications persistentes e o mecanismo de avisos internos não integram a Sprint 03.
 
 ---
 

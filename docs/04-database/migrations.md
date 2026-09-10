@@ -398,7 +398,7 @@ contracts
 
 ## Status
 
-🟡 Planejada
+🟢 Concluída
 
 ---
 
@@ -416,9 +416,7 @@ Criar a infraestrutura persistente necessária ao gerenciamento operacional de D
 
 ---
 
-## Estruturas Conceituais
-
-Planejadas:
+## Estruturas Implementadas
 
 ```text
 demands
@@ -430,7 +428,7 @@ demand_tags
 demand_tag_assignments
 ```
 
-A estrutura definitiva está congelada em `Demands`.
+A estrutura definitiva implementada está registrada em `Demands`.
 
 Nenhuma tabela `notifications` integra a Migration 003.
 
@@ -492,7 +490,7 @@ demand_tags
 
 # Status
 
-Status deverá permanecer separado de Tags.
+Status permanece separado de Tags.
 
 Domínio inicial:
 
@@ -522,7 +520,7 @@ URGENT
 
 # Notifications
 
-O comportamento funcional de avisos internos permanece na Sprint 03, mas a Migration 003 não cria infraestrutura persistente de Notifications.
+Notifications persistentes e o mecanismo de avisos internos ficaram fora da Sprint 03. A Migration 003 não cria infraestrutura persistente de Notifications.
 
 Persistência e mecanismo de entrega exigem contrato específico separado.
 
@@ -538,7 +536,7 @@ Não implementar nesta migration:
 
 ## Segurança
 
-A Migration deverá implementar autorização considerando:
+A Migration implementa autorização considerando:
 
 ```text
 Organization
@@ -1620,7 +1618,7 @@ Sprint 03
 Demandas
     │
     ▼
-Migration 003 planejada
+Migration 003 concluída
 ```
 
 ```text

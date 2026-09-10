@@ -741,15 +741,22 @@ Para Clientes & Acessos, os fluxos críticos podem incluir:
 
 # Sprint 03 — E2E
 
-Quando Demandas forem implementadas, poderão incluir:
+Os E2E implementados para Demandas cobrem:
 
 - criar Demanda;
 - editar Demanda;
 - alterar Status;
 - alterar Prioridade;
 - gerir responsáveis;
+- gerir Tags;
 - visualizar prazo;
-- validar acesso conforme Cliente.
+- pesquisar, filtrar, ordenar e paginar;
+- arquivar como OWNER e negar arquivamento a MEMBER;
+- validar acesso conforme Cliente;
+- negar assignee histórico sem Client Assignment;
+- negar ADMIN e acesso cross-Organization.
+
+O fechamento da Sprint 03 validou 10 cenários E2E novos de Demandas em duas execuções consecutivas, integrados a uma suíte total de 14 testes.
 
 ---
 
