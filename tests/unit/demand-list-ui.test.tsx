@@ -8,9 +8,10 @@ import DemandsPage from "@/app/(private)/demandas/page";
 import type { DemandListResult } from "@/lib/demands/queries";
 import type { DemandListItem } from "@/types/demand";
 
-const mocks = vi.hoisted(() => ({ listDemands: vi.fn(), resolveFoundationContext: vi.fn() }));
+const mocks = vi.hoisted(() => ({ listDemands: vi.fn(), notFound: vi.fn(), resolveFoundationContext: vi.fn() }));
 vi.mock("@/lib/demands/queries", () => ({ listDemands: mocks.listDemands }));
 vi.mock("@/services/foundation/foundation.service", () => ({ resolveFoundationContext: mocks.resolveFoundationContext }));
+vi.mock("next/navigation", () => ({ notFound: mocks.notFound }));
 
 const item: DemandListItem = {
   id: "11111111-1111-4111-8111-111111111111", client_id: "22222222-2222-4222-8222-222222222222",
@@ -32,6 +33,7 @@ async function renderPage(searchParams: Record<string, string | undefined> = {})
 describe("Demands list UI", () => {
   beforeEach(() => {
     mocks.listDemands.mockReset().mockResolvedValue(result());
+    mocks.notFound.mockReset().mockImplementation(() => { throw new Error("NEXT_NOT_FOUND"); });
     mocks.resolveFoundationContext.mockReset().mockResolvedValue({ status: "READY", membership: { role: "OWNER" } });
   });
 
@@ -69,10 +71,11 @@ describe("Demands list UI", () => {
     expect(screen.getAllByRole("link", { name: "Limpar filtros" }).some((link) => link.getAttribute("href") === "/demandas")).toBe(true);
   });
 
-  it("hides creation from ADMIN without changing backend authorization", async () => {
+  it("returns safe not-found for ADMIN without querying the module", async () => {
     mocks.resolveFoundationContext.mockResolvedValue({ status: "READY", membership: { role: "ADMIN" } });
-    await renderPage();
-    expect(screen.queryByRole("link", { name: "Nova Demanda" })).toBeNull();
+    await expect(DemandsPage({ searchParams: Promise.resolve({}) })).rejects.toThrow("NEXT_NOT_FOUND");
+    expect(mocks.notFound).toHaveBeenCalledOnce();
+    expect(mocks.listDemands).not.toHaveBeenCalled();
   });
 
   it("renders loading and lets the user retry an error", async () => {

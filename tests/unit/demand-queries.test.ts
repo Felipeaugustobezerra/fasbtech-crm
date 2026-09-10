@@ -110,7 +110,7 @@ const eligibleAssignee = {
   role: "MEMBER",
 };
 
-type QueryError = { message: string };
+type QueryError = { message: string; code?: string };
 
 function createListQueryMock(
   options: {
@@ -607,6 +607,35 @@ describe("demand list query", () => {
       total: 0,
       totalPages: 0,
     });
+    expect(supabase.rpc).not.toHaveBeenCalled();
+  });
+
+  it("preserves the authorized count when PostgREST reports an out-of-range page", async () => {
+    const outOfRangeResponse = {
+      data: null,
+      error: { code: "PGRST103", message: "Requested range not satisfiable" },
+      count: null,
+    };
+    const { query, supabase } = createListQueryMock({
+      response: {
+        data: [demandListRow],
+        error: null,
+        count: 2,
+      },
+    });
+    query.range
+      .mockResolvedValueOnce(outOfRangeResponse)
+      .mockResolvedValueOnce({ data: [demandListRow], error: null, count: 2 });
+
+    await expect(listDemands({ page: 2 })).resolves.toEqual({
+      items: [],
+      page: 2,
+      pageSize: 20,
+      total: 2,
+      totalPages: 1,
+    });
+    expect(query.range).toHaveBeenNthCalledWith(1, 20, 39);
+    expect(query.range).toHaveBeenNthCalledWith(2, 0, 0);
     expect(supabase.rpc).not.toHaveBeenCalled();
   });
 

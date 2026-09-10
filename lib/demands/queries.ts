@@ -327,10 +327,22 @@ export async function listDemands(
     }
 
     const ascending = params.direction === "asc";
-    const { data, error, count } = await query
+    let { data, error, count } = await query
       .order(params.sort, { ascending })
       .order("id", { ascending })
       .range(from, to);
+
+    if (error?.code === "PGRST103") {
+      const countProbe = await query.range(0, 0);
+
+      if (countProbe.error) {
+        throw countProbe.error;
+      }
+
+      data = [];
+      error = null;
+      count = countProbe.count;
+    }
 
     if (error) {
       throw error;

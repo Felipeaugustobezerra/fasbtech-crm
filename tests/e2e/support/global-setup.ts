@@ -200,60 +200,66 @@ async function createFixtures(status: LocalSupabaseStatus) {
     },
   });
 
-  const ownerResult = await supabase.auth.admin.createUser({
-    email: E2E_FIXTURES.owner.email,
-    password: E2E_FIXTURES.owner.password,
-    email_confirm: true,
-    user_metadata: { full_name: E2E_FIXTURES.owner.fullName },
-  });
+  const actors = [
+    ["owner", E2E_FIXTURES.owner],
+    ["member", E2E_FIXTURES.member],
+    ["memberB", E2E_FIXTURES.memberB],
+    ["admin", E2E_FIXTURES.admin],
+    ["otherOwner", E2E_FIXTURES.otherOwner],
+  ] as const;
+  const userIds = new Map<(typeof actors)[number][0], string>();
 
-  if (ownerResult.error || !ownerResult.data.user) {
-    throw new Error(
-      `Unable to create the local E2E OWNER: ${ownerResult.error?.message ?? "missing user"}`,
-    );
+  for (const [key, actor] of actors) {
+    const result = await supabase.auth.admin.createUser({
+      email: actor.email,
+      password: actor.password,
+      email_confirm: true,
+      user_metadata: { full_name: actor.fullName },
+    });
+
+    if (result.error || !result.data.user) {
+      throw new Error(
+        `Unable to create the local E2E ${key}: ${result.error?.message ?? "missing user"}`,
+      );
+    }
+
+    userIds.set(key, result.data.user.id);
   }
 
-  const memberResult = await supabase.auth.admin.createUser({
-    email: E2E_FIXTURES.member.email,
-    password: E2E_FIXTURES.member.password,
-    email_confirm: true,
-    user_metadata: { full_name: E2E_FIXTURES.member.fullName },
-  });
-
-  if (memberResult.error || !memberResult.data.user) {
-    throw new Error(
-      `Unable to create the local E2E MEMBER: ${memberResult.error?.message ?? "missing user"}`,
-    );
+  function userId(key: (typeof actors)[number][0]) {
+    const id = userIds.get(key);
+    if (!id) throw new Error(`Missing local E2E user id for ${key}.`);
+    return id;
   }
 
-  const organizationResult = await supabase
-    .from("organizations")
-    .insert({
+  const organizationsResult = await supabase.from("organizations").insert([
+    {
+      id: E2E_FIXTURES.organization.id,
       name: E2E_FIXTURES.organization.name,
       slug: E2E_FIXTURES.organization.slug,
       status: "ACTIVE",
-    })
-    .select("id")
-    .single();
-
-  if (organizationResult.error || !organizationResult.data) {
-    throw new Error(
-      `Unable to create the local E2E Organization: ${organizationResult.error?.message ?? "missing organization"}`,
-    );
-  }
-
-  const profilesResult = await supabase.from("profiles").insert([
-    {
-      id: ownerResult.data.user.id,
-      full_name: E2E_FIXTURES.owner.fullName,
-      status: "ACTIVE",
     },
     {
-      id: memberResult.data.user.id,
-      full_name: E2E_FIXTURES.member.fullName,
+      id: E2E_FIXTURES.otherOrganization.id,
+      name: E2E_FIXTURES.otherOrganization.name,
+      slug: E2E_FIXTURES.otherOrganization.slug,
       status: "ACTIVE",
     },
   ]);
+
+  if (organizationsResult.error) {
+    throw new Error(
+      `Unable to create the local E2E Organizations: ${organizationsResult.error.message}`,
+    );
+  }
+
+  const profilesResult = await supabase.from("profiles").insert(
+    actors.map(([key, actor]) => ({
+      id: userId(key),
+      full_name: actor.fullName,
+      status: "ACTIVE" as const,
+    })),
+  );
 
   if (profilesResult.error) {
     throw new Error(
@@ -263,15 +269,38 @@ async function createFixtures(status: LocalSupabaseStatus) {
 
   const membershipsResult = await supabase.from("organization_members").insert([
     {
-      organization_id: organizationResult.data.id,
-      user_id: ownerResult.data.user.id,
+      id: E2E_FIXTURES.owner.membershipId,
+      organization_id: E2E_FIXTURES.organization.id,
+      user_id: userId("owner"),
       role: "OWNER",
       status: "ACTIVE",
     },
     {
-      organization_id: organizationResult.data.id,
-      user_id: memberResult.data.user.id,
+      id: E2E_FIXTURES.member.membershipId,
+      organization_id: E2E_FIXTURES.organization.id,
+      user_id: userId("member"),
       role: "MEMBER",
+      status: "ACTIVE",
+    },
+    {
+      id: E2E_FIXTURES.memberB.membershipId,
+      organization_id: E2E_FIXTURES.organization.id,
+      user_id: userId("memberB"),
+      role: "MEMBER",
+      status: "ACTIVE",
+    },
+    {
+      id: E2E_FIXTURES.admin.membershipId,
+      organization_id: E2E_FIXTURES.organization.id,
+      user_id: userId("admin"),
+      role: "ADMIN",
+      status: "ACTIVE",
+    },
+    {
+      id: E2E_FIXTURES.otherOwner.membershipId,
+      organization_id: E2E_FIXTURES.otherOrganization.id,
+      user_id: userId("otherOwner"),
+      role: "OWNER",
       status: "ACTIVE",
     },
   ]);
@@ -279,6 +308,67 @@ async function createFixtures(status: LocalSupabaseStatus) {
   if (membershipsResult.error) {
     throw new Error(
       `Unable to create the local E2E Memberships: ${membershipsResult.error.message}`,
+    );
+  }
+
+  const clientsResult = await supabase.from("clients").insert([
+    {
+      id: E2E_FIXTURES.clients.clientA.id,
+      organization_id: E2E_FIXTURES.organization.id,
+      name: E2E_FIXTURES.clients.clientA.name,
+      created_by: userId("owner"),
+      updated_by: userId("owner"),
+    },
+    {
+      id: E2E_FIXTURES.clients.clientB.id,
+      organization_id: E2E_FIXTURES.organization.id,
+      name: E2E_FIXTURES.clients.clientB.name,
+      created_by: userId("owner"),
+      updated_by: userId("owner"),
+    },
+  ]);
+
+  if (clientsResult.error) {
+    throw new Error(
+      `Unable to create the local E2E Clients: ${clientsResult.error.message}`,
+    );
+  }
+
+  const assignmentsResult = await supabase.from("client_assignments").insert([
+    {
+      client_id: E2E_FIXTURES.clients.clientA.id,
+      membership_id: E2E_FIXTURES.member.membershipId,
+      created_by: userId("owner"),
+    },
+    {
+      client_id: E2E_FIXTURES.clients.clientB.id,
+      membership_id: E2E_FIXTURES.memberB.membershipId,
+      created_by: userId("owner"),
+    },
+  ]);
+
+  if (assignmentsResult.error) {
+    throw new Error(
+      `Unable to create the local E2E Client Assignments: ${assignmentsResult.error.message}`,
+    );
+  }
+
+  const demandResult = await supabase.from("demands").insert({
+    id: E2E_FIXTURES.demands.clientB.id,
+    organization_id: E2E_FIXTURES.organization.id,
+    client_id: E2E_FIXTURES.clients.clientB.id,
+    title: E2E_FIXTURES.demands.clientB.title,
+    description: "Demanda de controle para autorização e filtros E2E.",
+    status: "COMPLETED",
+    priority: "LOW",
+    due_date: E2E_FIXTURES.demands.clientB.dueDate,
+    created_by: userId("owner"),
+    updated_by: userId("owner"),
+  });
+
+  if (demandResult.error) {
+    throw new Error(
+      `Unable to create the local E2E Demand: ${demandResult.error.message}`,
     );
   }
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
 import { DemandList } from "@/components/demands/demand-list";
 import { DemandPagination } from "@/components/demands/demand-pagination";
@@ -19,7 +20,9 @@ export default async function DemandsPage({ searchParams }: Props) {
     sort: first(raw.sort), direction: first(raw.direction), dueOn: first(raw.dueOn),
     dueBefore: first(raw.dueBefore), dueAfter: first(raw.dueAfter),
   });
-  const [initialResult, context] = await Promise.all([listDemands(params), resolveFoundationContext()]);
+  const context = await resolveFoundationContext();
+  if (context.status === "READY" && context.membership.role === "ADMIN") notFound();
+  const initialResult = await listDemands(params);
   let result = initialResult;
   if (result.totalPages > 0 && result.page > result.totalPages) {
     const validPage = result.totalPages;

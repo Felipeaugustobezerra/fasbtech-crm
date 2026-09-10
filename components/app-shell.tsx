@@ -22,6 +22,7 @@ const navigation = [
     label: "Demandas",
     href: "/demandas",
     enabled: true,
+    hiddenForAdmin: true,
   },
   {
     label: "Financeiro",
@@ -56,6 +57,10 @@ function NavigationItems({ role }: Readonly<{ role: AppRole }>) {
   return (
     <nav aria-label="Navegação principal" className="space-y-1">
       {navigation.map((item) => {
+        if ("hiddenForAdmin" in item && item.hiddenForAdmin && role === "ADMIN") {
+          return null;
+        }
+
         if ("ownerOnly" in item && item.ownerOnly && role !== "OWNER") {
           return null;
         }
