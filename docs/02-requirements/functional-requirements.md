@@ -1584,11 +1584,12 @@ Principais grupos:
 
 ```text
 FR-600 — Financeiro
-FR-500 — Documentos
 FR-700 — Activity Logs
 FR-800 — Segurança
 FR-1100 — Testes
 ```
+
+O grupo FR-500 permanece requisito do produto, mas sua integração física com Financeiro não pertence à Sprint 04.
 
 ---
 

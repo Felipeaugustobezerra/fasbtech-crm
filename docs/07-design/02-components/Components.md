@@ -646,11 +646,13 @@ CANCELED
 
 # Financial Status Badge
 
-Não congelar ainda um componente com enum fechado de Status financeiro.
+Quando implementado, deverá representar exclusivamente:
 
-O domínio exato de Status financeiro ainda não foi formalmente definido.
-
-Quando definido, o componente deverá seguir a fonte oficial correspondente.
+```text
+PENDING  → Pendente
+REALIZED → Realizado
+CANCELED → Cancelado
+```
 
 ---
 
@@ -1152,10 +1154,11 @@ FinancialEntryForm
 FinancialEntryTable
 FinancialSummary
 FinancialGoalProgress
-FinancialDocumentList
 ```
 
-Não congelar componentes baseados em Status financeiro ainda não definido.
+Os componentes baseados em Status financeiro deverão utilizar o domínio `PENDING/REALIZED/CANCELED`.
+
+Documents físicos e `FinancialDocumentList` não pertencem à Sprint 04.
 
 ---
 

@@ -692,15 +692,15 @@ O saldo deverá ser calculado a partir das movimentações realizadas.
 
 # Status Financeiro
 
-O domínio exato de Status das movimentações financeiras ainda não está definido.
-
-Portanto:
+Domínio oficial aprovado para o planejamento físico:
 
 ```text
-não congelar enum de status financeiro
+PENDING
+REALIZED
+CANCELED
 ```
 
-antes da decisão formal correspondente.
+Realização utiliza `status + realized_date`: `PENDING` exige data nula, `REALIZED` exige data e `CANCELED` não participa dos agregados realizados. As constraints exatas serão definidas antes da migration.
 
 ---
 

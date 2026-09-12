@@ -842,6 +842,7 @@ Compreender:
 - [[docs/08-sprints/Sprint-01]]
 - [[docs/08-sprints/Sprint-02]]
 - [[docs/08-sprints/Sprint-03]]
+- [[docs/08-sprints/Sprint-04]]
 
 ---
 
@@ -903,6 +904,23 @@ Activity Logs correspondentes
 
 ---
 
+# Sprint 04 — Financeiro
+
+Status: Planejada e tecnicamente não iniciada
+
+Responsável por planejar e implementar, após congelamento físico:
+
+```text
+Entradas
+Saídas
+Metas mensais
+Indicadores financeiros derivados
+Autorização financeira específica
+Activity Logs correspondentes
+```
+
+---
+
 # Sprints Planejadas
 
 A sequência funcional aprovada é:
@@ -931,11 +949,11 @@ Sprint 05 — Contratos
 Sprint 06 — Dashboard
 ```
 
-Próxima Sprint:
+Sprint atual:
 
 ```text
 Sprint 04 — Financeiro
-Status: Não iniciada
+Status: Planejada e tecnicamente não iniciada
 ```
 
 Documentos específicos das Sprints futuras somente deverão ser criados quando o processo oficial exigir.
@@ -1267,6 +1285,7 @@ Este documento deverá permanecer sincronizado com:
 - Sprint 01 v3.0;
 - Sprint 02 v3.0;
 - Sprint 03 v3.0;
+- Sprint 04 v3.0;
 - Demands v3.0.
 
 ---
@@ -1282,6 +1301,7 @@ Antes de considerar este documento atualizado verificar:
 - [ ] Sprint 01 está correta?
 - [ ] Sprint 02 está correta?
 - [ ] Sprint 03 está correta?
+- [ ] Sprint 04 está correta?
 - [ ] Roadmap de Sprints está correto?
 - [ ] Migrations está identificada como fonte de evolução persistente?
 - [ ] Migration 001 está limitada à Foundation?
@@ -1302,7 +1322,7 @@ O Project Index será considerado atualizado quando:
 - a ordem de leitura estiver sincronizada com o MVP v3.0;
 - a hierarquia documental estiver coerente;
 - as fontes da verdade de cada domínio estiverem explícitas;
-- Sprint 01, Sprint 02 e Sprint 03 estiverem atualizadas;
+- Sprint 01, Sprint 02, Sprint 03 e Sprint 04 estiverem atualizadas;
 - o Roadmap de Sprints estiver correto;
 - a estratégia de migrations estiver corretamente representada;
 - Leads e Projects não forem tratados como módulos atuais;

@@ -934,8 +934,9 @@ Inclui:
 - saldo;
 - pagamentos;
 - recorrência informativa;
-- metas;
-- documentos financeiros.
+- metas.
+
+Documents físicos do Financeiro serão integrados futuramente pela infraestrutura central e não pertencem à Sprint 04.
 
 ---
 

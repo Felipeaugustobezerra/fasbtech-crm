@@ -675,14 +675,11 @@ Uma saída financeira não precisa possuir Cliente.
 A movimentação deverá distinguir:
 
 ```text
-Entrada
-
-ou
-
-Saída
+INCOME
+EXPENSE
 ```
 
-A definição física do campo será feita no schema correspondente.
+`INCOME` representa entrada financeira e `EXPENSE` representa saída financeira. O valor permanece positivo e não determina o tipo.
 
 ---
 

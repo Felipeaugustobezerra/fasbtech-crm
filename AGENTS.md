@@ -166,9 +166,8 @@ Não antecipar módulos de Sprints futuras.
 Sprint 03 — Demandas
 Status: Concluída
 
-Próxima Sprint:
 Sprint 04 — Financeiro
-Status: Não iniciada
+Status: Planejada e tecnicamente não iniciada
 ```
 
 A Foundation foi concluída na Sprint 01 e Clientes & Acessos na Sprint 02.

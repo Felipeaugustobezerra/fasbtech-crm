@@ -1105,8 +1105,9 @@ O desenvolvimento deverá seguir a seguinte direção:
 - saldo;
 - categorias;
 - metas;
-- recorrência;
-- comprovantes.
+- recorrência.
+
+Documents físicos do Financeiro não pertencem à Sprint 04 e deverão reutilizar futuramente a infraestrutura central.
 
 ---
 

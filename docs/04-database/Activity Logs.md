@@ -931,14 +931,16 @@ entity_type = DEMAND
 
 Quando implementada, a Sprint 04 deverá registrar operações financeiras relevantes.
 
-Exemplos:
+Actions aprovadas:
 
 ```text
-Movimentação criada
-Movimentação alterada
-Movimentação arquivada/cancelada quando aplicável
-Meta criada
-Meta alterada
+FINANCIAL_ENTRY / CREATED
+FINANCIAL_ENTRY / UPDATED
+FINANCIAL_ENTRY / STATUS_CHANGED
+FINANCIAL_ENTRY / ARCHIVED
+
+FINANCIAL_GOAL / CREATED
+FINANCIAL_GOAL / UPDATED
 ```
 
 A auditoria financeira deverá evitar armazenar informações sensíveis desnecessárias em metadata.

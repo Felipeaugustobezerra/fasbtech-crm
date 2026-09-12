@@ -487,7 +487,6 @@ Implementar:
 - pagamentos únicos;
 - recorrência informativa;
 - metas mensais;
-- anexos;
 - Activity Logs aplicáveis.
 
 ---
@@ -505,8 +504,7 @@ Permitir registrar:
 - data de pagamento;
 - status;
 - tipo de pagamento;
-- observações;
-- documentos.
+- observações.
 
 ---
 
@@ -521,8 +519,7 @@ Permitir registrar:
 - vencimento;
 - data de pagamento;
 - status;
-- observações;
-- documentos.
+- observações.
 
 Uma saída não deverá exigir associação a Cliente.
 
@@ -567,14 +564,7 @@ O progresso deverá considerar a receita efetivamente recebida durante o períod
 
 ## Documentos Financeiros
 
-O módulo deverá reutilizar a infraestrutura central de documentos.
-
-Exemplos:
-
-- comprovantes;
-- recibos;
-- notas fiscais;
-- documentos relacionados à movimentação.
+Documents físicos não integram a Sprint 04. Uma integração futura deverá reutilizar a infraestrutura central de documentos.
 
 ---
 
