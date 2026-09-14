@@ -159,7 +159,6 @@ export const setFinancialGoalSchema = z
   })
   .strict();
 
-export type FinancialDecimal = z.infer<typeof financialDecimalSchema>;
 export type CreateFinancialEntryInput = z.infer<
   typeof createFinancialEntrySchema
 >;
