@@ -26,11 +26,11 @@ Setembro de 2026
 
 # Estado do Planejamento
 
-Este documento registra o planejamento funcional e técnico inicial da Sprint 04.
+Este documento registra o planejamento funcional e o contrato técnico aprovado da Sprint 04.
 
-Nenhum schema físico está congelado por este planejamento. Nenhum código, migration, SQL, Type, Schema Zod, Query, Service, Server Action, componente ou teste foi implementado.
+O schema físico está congelado em `docs/04-database/Financial.md`. Nenhum código, migration, SQL, Type, Schema Zod, Query, Service, Server Action, componente ou teste foi implementado.
 
-As decisões identificadas como bloqueadoras deverão ser aprovadas antes da criação da migration do Financeiro.
+Não permanece decisão física bloqueadora antes da criação da migration do Financeiro.
 
 ---
 
@@ -77,6 +77,7 @@ A Sprint reutilizará autenticação, Profiles, Organizations, Memberships, role
 - System Architecture;
 - Module Architecture;
 - Data Model;
+- Financial;
 - Migrations;
 - RLS;
 - Activity Logs;
@@ -117,7 +118,7 @@ O produto e os requisitos confirmam:
 - progresso derivado da meta;
 - Activity Logs para operações relevantes.
 
-O escopo físico exato depende das decisões bloqueadoras deste documento.
+O escopo físico exato está definido no contrato `Financial`.
 
 ---
 
@@ -160,7 +161,7 @@ financial_entries
 financial_goals
 ```
 
-Esses nomes estão aprovados conceitualmente, mas não congelam tabelas, colunas, constraints ou assinaturas de RPC antes do contrato físico.
+Esses nomes, tabelas, colunas, constraints e fronteiras RPC estão congelados no contrato `Financial`.
 
 Modelo conceitual:
 
@@ -235,7 +236,7 @@ RECURRING
 
 Cada novo período deverá ser registrado por um movimento explícito do utilizador autorizado.
 
-O nome físico da coluna e o tipo PostgreSQL ainda serão definidos no contrato físico.
+O contrato físico utiliza `payment_nature` em `TEXT` com constraint de domínio.
 
 ---
 
@@ -288,7 +289,7 @@ CANCELED
 
 Somente movimentos com `status = REALIZED` participam de entradas realizadas, saídas realizadas, saldo e progresso da meta.
 
-A futura integridade física deverá impedir combinações incoerentes entre Status e `realized_date`.
+A constraint física definida em `Financial` deverá impedir combinações incoerentes entre Status e `realized_date`.
 
 Saldo:
 
@@ -357,7 +358,7 @@ Moeda operacional da Sprint:
 EUR
 ```
 
-Não haverá multi-currency, conversão ou câmbio. O contrato físico ainda decidirá se `EUR` será persistido em coluna ou permanecerá regra organizacional do MVP.
+Não haverá multi-currency, conversão ou câmbio. `EUR` permanecerá regra organizacional do MVP e não será persistido em coluna nesta Sprint.
 
 ---
 
@@ -550,7 +551,7 @@ ADMIN e MEMBER serão negados. Backend e RLS permanecem como autoridade; guards 
 
 As tabelas expostas deverão possuir RLS antes de receber Grants de aplicação.
 
-As Policies específicas deverão implementar o contrato OWNER-only.
+As Policies específicas implementarão o contrato OWNER-only definido em `Financial`.
 
 Regras obrigatórias:
 
@@ -566,7 +567,7 @@ Regras obrigatórias:
 - não buscar todos os movimentos para filtrar no React;
 - conceder acesso do Data API somente com Grants mínimos e RLS correspondente.
 
-Os predicados e a estrutura concreta das Policies permanecem para o contrato físico.
+Os predicados e a estrutura das Policies deverão seguir o contrato físico `Financial` e o helper OWNER já existente.
 
 ---
 
@@ -598,7 +599,7 @@ ADR-002 não exige RPC para toda escrita.
 
 RPC deverá ser utilizada quando a operação exigir atomicidade, múltiplas escritas, auditoria inseparável ou autorização privilegiada controlada.
 
-As fronteiras entre escrita simples e RPC permanecem abertas até o contrato físico definir atomicidade e operações concretas.
+As cinco escritas financeiras utilizarão as RPCs transacionais congeladas em `Financial`, garantindo mutação e Activity Log atômicos.
 
 Toda RPC `SECURITY DEFINER`, se aprovada, deverá usar `auth.uid()` internamente, `SET search_path = ''`, schemas explícitos, validação completa de autorização e `EXECUTE` restrito. `PUBLIC` e `anon` não receberão execução privilegiada.
 
@@ -669,13 +670,13 @@ A rota `/financeiro` poderá conter:
 
 Os cards previstos são entradas realizadas, saídas realizadas, saldo em caixa e meta mensal. Nenhum card será persistido como agregado nem integrado ao Dashboard consolidado nesta Sprint.
 
-Detalhes, formulários e ações dependerão do contrato físico e da matriz de autorização aprovados.
+Detalhes, formulários e ações seguirão o contrato físico e a matriz OWNER-only aprovados.
 
 ---
 
 # Listagem, Pesquisa, Filtros e Paginação
 
-Pesquisa por descrição é funcionalmente plausível, mas os campos pesquisáveis deverão ser congelados antes da Query.
+Pesquisa inicial será case-insensitive por descrição, conforme o contrato físico.
 
 Filtros funcionalmente disponíveis para o planejamento físico:
 
@@ -699,9 +700,9 @@ Colunas candidatas:
 - realização;
 - ações autorizadas.
 
-Os campos físicos de search, filtros e sort ainda serão congelados com as Queries e índices.
+Os campos físicos de search, filtros e sort estão congelados em `Financial`.
 
-A ordenação usará whitelist explícita. Campos e direção serão congelados junto ao schema.
+A ordenação usará a whitelist explícita definida em `Financial`.
 
 Paginação seguirá o padrão oficial:
 
@@ -833,19 +834,26 @@ A Sprint somente poderá ser concluída quando:
 
 # Decisões Físicas Antes da Migration
 
-Permanecem abertas somente:
+O contrato físico foi congelado em:
 
-1. nomes exatos de tabelas e colunas caso surja conflito com convenções existentes;
-2. persistência de `EUR` em coluna ou manutenção como regra organizacional;
-3. constraints exatas, incluindo coerência entre `status` e `realized_date`;
-4. Foreign Keys e integridade cross-Organization;
-5. índices sustentados pelas Queries aprovadas;
-6. Policies e predicados concretos de RLS OWNER-only;
-7. fronteiras entre escrita simples e RPC, além das assinaturas necessárias;
-8. estratégia autorizada de summary e aggregate Query;
-9. metadata mínima exata dos Activity Logs;
-10. campos físicos de pesquisa, filtros e whitelist de ordenação;
-11. integração futura de Documents, fora da migration desta Sprint.
+```text
+docs/04-database/Financial.md
+```
+
+Estão definidos:
+
+- tabelas, colunas, tipos, nulabilidade e defaults;
+- constraints, Foreign Keys e integridade cross-Organization;
+- EUR como regra organizacional sem coluna;
+- índices mínimos;
+- RLS e Grants OWNER-only;
+- cinco RPCs transacionais de escrita;
+- `get_financial_summary` para agregados autorizados;
+- Activity Logs e metadata mínima;
+- pesquisa, filtros, whitelist de ordenação e paginação;
+- cobertura física futura.
+
+Não permanece decisão física bloqueadora. Documents continuam deliberadamente fora da Sprint.
 
 ---
 
@@ -877,12 +885,12 @@ Documentos financeiros permanecem requisito futuro do produto, mas Documents fí
 - [x] Matriz OWNER-only aprovada.
 - [x] Actions de Activity Logs aprovadas.
 - [x] Schema conceitual de meta mensal aprovado.
-- [ ] Índices e Queries aprovados.
-- [ ] RLS e Policies aprovadas.
-- [ ] Fronteiras de RPC aprovadas.
-- [ ] Agregados autorizados aprovados.
+- [x] Índices e Queries aprovados.
+- [x] RLS e Policies aprovadas.
+- [x] Fronteiras de RPC aprovadas.
+- [x] Agregados autorizados aprovados.
 - [x] Documents físicos mantidos fora da Sprint 04.
-- [ ] Contrato físico consolidado antes da migration.
+- [x] Contrato físico consolidado antes da migration.
 
 ---
 
@@ -893,6 +901,6 @@ Sprint 04 — Financeiro
 Status: Planejada e tecnicamente não iniciada
 ```
 
-O escopo funcional mínimo está identificado, mas a migration permanece bloqueada pelas decisões físicas e de autorização listadas neste documento.
+O escopo funcional e o contrato físico estão aprovados. A implementação técnica e a migration ainda não foram iniciadas.
 
 Nenhuma funcionalidade foi implementada por esta tarefa.
