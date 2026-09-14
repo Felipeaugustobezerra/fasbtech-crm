@@ -413,6 +413,156 @@ export type Database = {
           },
         ]
       }
+      financial_entries: {
+        Row: {
+          amount: number
+          archived_at: string | null
+          category: string | null
+          client_id: string | null
+          created_at: string
+          created_by: string
+          description: string
+          due_date: string | null
+          id: string
+          notes: string | null
+          organization_id: string
+          payment_nature: string
+          realized_date: string | null
+          reference_date: string
+          status: string
+          type: string
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          amount: number
+          archived_at?: string | null
+          category?: string | null
+          client_id?: string | null
+          created_at?: string
+          created_by: string
+          description: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          organization_id: string
+          payment_nature?: string
+          realized_date?: string | null
+          reference_date: string
+          status?: string
+          type: string
+          updated_at?: string
+          updated_by: string
+        }
+        Update: {
+          amount?: number
+          archived_at?: string | null
+          category?: string | null
+          client_id?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string
+          due_date?: string | null
+          id?: string
+          notes?: string | null
+          organization_id?: string
+          payment_nature?: string
+          realized_date?: string | null
+          reference_date?: string
+          status?: string
+          type?: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_entries_client_organization_fkey"
+            columns: ["client_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "financial_entries_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_entries_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_entries_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      financial_goals: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          month: number
+          organization_id: string
+          target_amount: number
+          updated_at: string
+          updated_by: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          month: number
+          organization_id: string
+          target_amount: number
+          updated_at?: string
+          updated_by: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          month?: number
+          organization_id?: string
+          target_amount?: number
+          updated_at?: string
+          updated_by?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_goals_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_goals_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_goals_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           archived_at: string | null
@@ -529,6 +679,7 @@ export type Database = {
       }
       archive_client: { Args: { p_client_id: string }; Returns: string }
       archive_demand: { Args: { p_demand_id: string }; Returns: string }
+      archive_financial_entry: { Args: { p_entry_id: string }; Returns: string }
       assign_client_access: {
         Args: { p_client_id: string; p_membership_id: string }
         Returns: string
@@ -536,6 +687,10 @@ export type Database = {
       bootstrap_initial_organization: { Args: never; Returns: string }
       change_demand_status: {
         Args: { p_demand_id: string; p_status: string }
+        Returns: string
+      }
+      change_financial_entry_status: {
+        Args: { p_entry_id: string; p_realized_date?: string; p_status: string }
         Returns: string
       }
       create_client: {
@@ -568,6 +723,30 @@ export type Database = {
           p_title: string
         }
         Returns: string
+      }
+      create_financial_entry: {
+        Args: {
+          p_amount: number
+          p_category?: string
+          p_client_id?: string
+          p_description: string
+          p_due_date?: string
+          p_notes?: string
+          p_payment_nature?: string
+          p_reference_date: string
+          p_type: string
+        }
+        Returns: string
+      }
+      get_financial_summary: {
+        Args: { p_month: number; p_year: number }
+        Returns: {
+          cash_balance: number
+          goal_progress: number
+          goal_target: number
+          monthly_expense: number
+          monthly_income: number
+        }[]
       }
       list_demand_assignees: {
         Args: { p_demand_id: string }
@@ -612,6 +791,10 @@ export type Database = {
         }
         Returns: string
       }
+      set_financial_goal: {
+        Args: { p_month: number; p_target_amount: number; p_year: number }
+        Returns: string
+      }
       update_client: {
         Args: {
           p_address_line_1?: string
@@ -640,6 +823,21 @@ export type Database = {
           p_priority?: string
           p_start_date?: string
           p_title: string
+        }
+        Returns: string
+      }
+      update_financial_entry: {
+        Args: {
+          p_amount: number
+          p_category?: string
+          p_client_id?: string
+          p_description: string
+          p_due_date?: string
+          p_entry_id: string
+          p_notes?: string
+          p_payment_nature?: string
+          p_reference_date: string
+          p_type: string
         }
         Returns: string
       }
