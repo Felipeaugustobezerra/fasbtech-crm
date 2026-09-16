@@ -14,7 +14,7 @@ FASBtech CRM
 
 ## Status
 
-🟢 Contrato físico aprovado e ainda não implementado
+🟢 Implementado e validado na Sprint 04
 
 ---
 
@@ -26,9 +26,9 @@ Setembro de 2026
 
 # Objetivo
 
-Este documento registra o contrato físico do módulo Financeiro para a Sprint 04.
+Este documento registra o contrato físico implementado do módulo Financeiro na Sprint 04.
 
-Ele define, antes da migration:
+Ele define e documenta:
 
 - tabelas, colunas, tipos e defaults;
 - domínios e constraints;
@@ -45,7 +45,7 @@ Ele define, antes da migration:
 - cobertura física futura;
 - itens deliberadamente fora do escopo.
 
-Nenhum SQL, migration, código ou teste é criado por este documento.
+A implementação correspondente está versionada na migration e nas camadas de aplicação da Sprint 04.
 
 ---
 
@@ -77,7 +77,7 @@ Em caso de conflito futuro, a implementação deverá parar e sincronizar as fon
 
 # Escopo Físico Congelado
 
-A migration da Sprint 04 deverá criar exclusivamente as entidades financeiras:
+A migration da Sprint 04 criou exclusivamente as entidades financeiras:
 
 ```text
 financial_entries
@@ -1199,15 +1199,15 @@ Não confiar em totais, progresso, booleano `realized`, Organization, role, auto
 
 # Decisões Remanescentes
 
-Não permanece decisão física bloqueadora para criar a migration da Sprint 04.
+Não permanece decisão física bloqueadora da Sprint 04.
 
-A implementação ainda deverá escolher apenas detalhes SQL mecânicos — nomes de constraints, organização interna das funções e expressões equivalentes — sem alterar o comportamento congelado neste contrato.
+Os detalhes SQL mecânicos foram implementados sem alterar o comportamento congelado neste contrato.
 
 ---
 
 # Definition of Done do Contrato
 
-Este contrato está pronto quando a futura migration puder ser implementada sem decidir novamente:
+A implementação deste contrato é considerada concluída quando estiver validada sem decidir novamente:
 
 - schema;
 - defaults;
@@ -1226,4 +1226,4 @@ Este contrato está pronto quando a futura migration puder ser implementada sem 
 - índices;
 - cobertura de testes.
 
-O estado atual atende esses critérios documentalmente, sem iniciar a implementação técnica da Sprint 04.
+O estado final atende esses critérios documental e tecnicamente, com banco, aplicação e testes aprovados.

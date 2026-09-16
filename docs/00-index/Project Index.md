@@ -442,6 +442,7 @@ Compreender:
 - [[docs/04-database/Migration-001]]
 - [[docs/04-database/Bootstrap]]
 - [[docs/04-database/Demands]]
+- [[docs/04-database/Financial]]
 
 ---
 
@@ -906,9 +907,9 @@ Activity Logs correspondentes
 
 # Sprint 04 — Financeiro
 
-Status: Planejada e tecnicamente não iniciada
+Status: Concluída
 
-Responsável por planejar e implementar, após congelamento físico:
+Responsável por:
 
 ```text
 Entradas
@@ -918,6 +919,12 @@ Indicadores financeiros derivados
 Autorização financeira específica
 Activity Logs correspondentes
 ```
+
+---
+
+# Sprint 05 — Contratos
+
+Status: Não iniciada
 
 ---
 
@@ -949,11 +956,11 @@ Sprint 05 — Contratos
 Sprint 06 — Dashboard
 ```
 
-Sprint atual:
+Próxima Sprint:
 
 ```text
-Sprint 04 — Financeiro
-Status: Planejada e tecnicamente não iniciada
+Sprint 05 — Contratos
+Status: Não iniciada
 ```
 
 Documentos específicos das Sprints futuras somente deverão ser criados quando o processo oficial exigir.
@@ -1287,6 +1294,7 @@ Este documento deverá permanecer sincronizado com:
 - Sprint 03 v3.0;
 - Sprint 04 v3.0;
 - Demands v3.0.
+- Financial v3.0.
 
 ---
 
@@ -1322,7 +1330,7 @@ O Project Index será considerado atualizado quando:
 - a ordem de leitura estiver sincronizada com o MVP v3.0;
 - a hierarquia documental estiver coerente;
 - as fontes da verdade de cada domínio estiverem explícitas;
-- Sprint 01, Sprint 02, Sprint 03 e Sprint 04 estiverem atualizadas;
+- Sprint 01, Sprint 02, Sprint 03, Sprint 04 e o estado da Sprint 05 estiverem atualizados;
 - o Roadmap de Sprints estiver correto;
 - a estratégia de migrations estiver corretamente representada;
 - Leads e Projects não forem tratados como módulos atuais;

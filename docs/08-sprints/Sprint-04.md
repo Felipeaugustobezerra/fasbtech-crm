@@ -14,7 +14,7 @@ FASBtech CRM
 
 ## Status
 
-🟡 Planejada e tecnicamente não iniciada
+🟢 Concluída
 
 ---
 
@@ -24,13 +24,13 @@ Setembro de 2026
 
 ---
 
-# Estado do Planejamento
+# Estado da Sprint
 
-Este documento registra o planejamento funcional e o contrato técnico aprovado da Sprint 04.
+Este documento registra o planejamento, a implementação e o fechamento técnico da Sprint 04.
 
-O schema físico está congelado em `docs/04-database/Financial.md`. Nenhum código, migration, SQL, Type, Schema Zod, Query, Service, Server Action, componente ou teste foi implementado.
+O schema físico está congelado em `docs/04-database/Financial.md` e foi implementado com banco, segurança, camadas de aplicação, interface e testes.
 
-Não permanece decisão física bloqueadora antes da criação da migration do Financeiro.
+Não permanece decisão física ou técnica bloqueadora na Sprint 04.
 
 ---
 
@@ -894,13 +894,79 @@ Documentos financeiros permanecem requisito futuro do produto, mas Documents fí
 
 ---
 
-# Resultado deste Planejamento
+# Resultado Final
 
 ```text
 Sprint 04 — Financeiro
-Status: Planejada e tecnicamente não iniciada
+Status: Concluída
 ```
 
-O escopo funcional e o contrato físico estão aprovados. A implementação técnica e a migration ainda não foram iniciadas.
+Foram entregues:
 
-Nenhuma funcionalidade foi implementada por esta tarefa.
+- `financial_entries` e `financial_goals`;
+- RLS e Grants OWNER-only;
+- cinco RPCs transacionais de escrita;
+- resumo financeiro autorizado por RPC;
+- Types e validações Zod;
+- Queries, Services e Server Actions;
+- UI completa de listagem, criação, detalhe, edição e operações;
+- Activity Logs atômicos;
+- arquivamento lógico;
+- metas mensais e progresso derivado;
+- testes unitários, pgTAP, concorrência e E2E.
+
+As regras finais permanecem:
+
+- tipo `INCOME/EXPENSE`;
+- Status `PENDING/REALIZED/CANCELED`;
+- natureza `ONE_TIME/RECURRING`;
+- moeda operacional única EUR;
+- movimento `REALIZED` arquivado continua nos agregados;
+- movimento `CANCELED` não participa dos agregados;
+- ADMIN e MEMBER não possuem acesso ao Financeiro;
+- Client Assignment não concede acesso financeiro;
+- Dashboard consolidado permanece fora desta Sprint e pertence à Sprint 06.
+
+---
+
+# Validação Final
+
+- pgTAP: 15 arquivos e 566 testes aprovados;
+- unitários/aplicação: 33 arquivos e 520 testes aprovados;
+- E2E: 24 testes aprovados, sendo 10 financeiros;
+- reset local do banco aprovado;
+- database lint aprovado sem erros;
+- concorrência de Bootstrap aprovada;
+- concorrência de alteração da role OWNER aprovada;
+- concorrência de meta financeira aprovada;
+- typecheck aprovado;
+- lint aprovado;
+- build aprovado;
+- `git diff --check` aprovado.
+
+Nenhum bug funcional foi encontrado no E2E. Houve somente um ajuste de seletor no próprio teste E2E. O incidente de tipos duplicados em `.next/types` foi identificado como cache local e resolvido pela regeneração do build, sem alteração de produto.
+
+---
+
+# Commits Relevantes
+
+```text
+19db40e
+d6a7dae
+68263df
+93c5f76
+88092f1
+7d92ac7
+df30a67
+cf19fca
+b1817dd
+```
+
+---
+
+# Próxima Sprint
+
+```text
+Sprint 05 — Contratos
+Status: Não iniciada
+```

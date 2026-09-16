@@ -6,6 +6,38 @@ O Changelog segue o princípio de documentar apenas mudanças significativas na 
 
 ---
 
+# [3.0.0] - Em desenvolvimento
+
+## Sprint 04 — Financeiro
+
+### Concluído
+
+- Persistência de `financial_entries` e `financial_goals`.
+- Autorização e RLS OWNER-only; ADMIN e MEMBER permanecem sem acesso.
+- RPCs transacionais, Activity Logs e resumo financeiro autorizado.
+- Types, validações, Queries, Services e Server Actions.
+- UI completa de movimentações, filtros, Status, arquivamento e metas mensais.
+- Regras `INCOME/EXPENSE`, `PENDING/REALIZED/CANCELED` e `ONE_TIME/RECURRING`.
+- EUR como moeda operacional única.
+- Movimento `REALIZED` arquivado preservado nos agregados e movimento `CANCELED` excluído.
+- Testes unitários, pgTAP, concorrência e E2E aprovados.
+- Dashboard consolidado mantido fora da Sprint 04.
+
+### Validação
+
+- 566 testes pgTAP em 15 arquivos.
+- 520 testes unitários/aplicação em 33 arquivos.
+- 24 testes E2E, incluindo 10 cenários financeiros.
+- Database reset, database lint, três cenários concorrentes, typecheck, lint, build e diff-check aprovados.
+- Nenhum bug funcional encontrado no E2E; somente um seletor do teste foi ajustado.
+- Duplicações temporárias em `.next/types` foram confirmadas como cache local, sem mudança de produto.
+
+## Próxima Sprint
+
+- Sprint 05 — Contratos: não iniciada.
+
+---
+
 # [1.0.0] - Em desenvolvimento
 
 ## Documentação
