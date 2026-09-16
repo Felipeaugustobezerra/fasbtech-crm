@@ -606,11 +606,11 @@ Os templates servirão como base para geração de contratos específicos para C
 ## Fluxo
 
 ```text
-Selecionar Cliente
+Selecionar Template
 
 ↓
 
-Selecionar Template
+Selecionar Cliente
 
 ↓
 

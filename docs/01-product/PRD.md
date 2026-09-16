@@ -434,11 +434,11 @@ O módulo Contratos deverá permitir criar, gerar, armazenar e acompanhar contra
 O fluxo esperado é:
 
 ```text
-Selecionar Cliente
+Selecionar modelo de contrato
 
 ↓
 
-Selecionar modelo de contrato
+Selecionar Cliente
 
 ↓
 

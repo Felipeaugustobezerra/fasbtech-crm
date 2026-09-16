@@ -844,6 +844,7 @@ Compreender:
 - [[docs/08-sprints/Sprint-02]]
 - [[docs/08-sprints/Sprint-03]]
 - [[docs/08-sprints/Sprint-04]]
+- [[docs/08-sprints/Sprint-05]]
 
 ---
 
@@ -924,7 +925,7 @@ Activity Logs correspondentes
 
 # Sprint 05 — Contratos
 
-Status: Não iniciada
+Status: Planejada e tecnicamente não iniciada
 
 ---
 
@@ -960,7 +961,7 @@ Próxima Sprint:
 
 ```text
 Sprint 05 — Contratos
-Status: Não iniciada
+Status: Planejada e tecnicamente não iniciada
 ```
 
 Documentos específicos das Sprints futuras somente deverão ser criados quando o processo oficial exigir.

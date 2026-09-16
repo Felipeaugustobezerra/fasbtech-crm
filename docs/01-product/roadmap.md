@@ -608,11 +608,11 @@ Implementar:
 ## Fluxo Principal
 
 ```text
-Selecionar Cliente
+Selecionar Template
 
 ↓
 
-Selecionar Template
+Selecionar Cliente
 
 ↓
 
