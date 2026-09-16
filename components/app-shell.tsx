@@ -27,7 +27,8 @@ const navigation = [
   {
     label: "Financeiro",
     href: "/financeiro",
-    enabled: false,
+    enabled: true,
+    ownerOnly: true,
   },
   {
     label: "Contratos",

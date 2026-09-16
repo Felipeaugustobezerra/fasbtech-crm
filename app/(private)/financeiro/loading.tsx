@@ -1,0 +1,3 @@
+export default function FinancialLoading() {
+  return <section aria-label="A carregar Financeiro" aria-busy="true" className="mx-auto w-full max-w-7xl animate-pulse"><span className="sr-only" role="status">A carregar Financeiro.</span><div className="h-4 w-24 rounded bg-slate-200" /><div className="mt-4 h-10 w-52 rounded bg-slate-200" /><div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{Array.from({ length: 4 }, (_, index) => <div key={index} className="h-28 rounded-xl border border-slate-200 bg-white" />)}</div><div className="mt-8 h-48 rounded-xl border border-slate-200 bg-white" /><div className="mt-5 h-80 rounded-xl border border-slate-200 bg-white" /></section>;
+}
