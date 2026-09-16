@@ -371,6 +371,25 @@ async function createFixtures(status: LocalSupabaseStatus) {
       `Unable to create the local E2E Demand: ${demandResult.error.message}`,
     );
   }
+
+  const financialResult = await supabase.from("financial_entries").insert({
+    id: E2E_FIXTURES.financial.otherOrganizationEntry.id,
+    organization_id: E2E_FIXTURES.otherOrganization.id,
+    type: "INCOME",
+    status: "PENDING",
+    payment_nature: "ONE_TIME",
+    description: E2E_FIXTURES.financial.otherOrganizationEntry.description,
+    amount: 100,
+    reference_date: "2026-09-01",
+    created_by: userId("otherOwner"),
+    updated_by: userId("otherOwner"),
+  });
+
+  if (financialResult.error) {
+    throw new Error(
+      `Unable to create the local E2E Financial Entry: ${financialResult.error.message}`,
+    );
+  }
 }
 
 export default async function globalSetup(config: FullConfig) {

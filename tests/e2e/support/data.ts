@@ -56,4 +56,10 @@ export const E2E_FIXTURES = {
       dueDate: "2026-12-15",
     },
   },
+  financial: {
+    otherOrganizationEntry: {
+      id: "50000000-0000-4000-8000-000000000001",
+      description: "Movimentação restrita da Organization B",
+    },
+  },
 } as const;
