@@ -219,6 +219,160 @@ export type Database = {
           },
         ]
       }
+      contract_templates: {
+        Row: {
+          content: string
+          created_at: string
+          created_by: string
+          id: string
+          is_active: boolean
+          name: string
+          organization_id: string
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          created_by: string
+          id?: string
+          is_active?: boolean
+          name: string
+          organization_id: string
+          updated_at?: string
+          updated_by: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          organization_id?: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_templates_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contracts: {
+        Row: {
+          canceled_at: string | null
+          client_id: string
+          created_at: string
+          created_by: string
+          draft_data: Json
+          generated_at: string | null
+          id: string
+          organization_id: string
+          sent_at: string | null
+          sent_to_email: string | null
+          signed_at: string | null
+          snapshot: Json | null
+          status: string
+          template_id: string
+          title: string
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          canceled_at?: string | null
+          client_id: string
+          created_at?: string
+          created_by: string
+          draft_data?: Json
+          generated_at?: string | null
+          id?: string
+          organization_id: string
+          sent_at?: string | null
+          sent_to_email?: string | null
+          signed_at?: string | null
+          snapshot?: Json | null
+          status?: string
+          template_id: string
+          title: string
+          updated_at?: string
+          updated_by: string
+        }
+        Update: {
+          canceled_at?: string | null
+          client_id?: string
+          created_at?: string
+          created_by?: string
+          draft_data?: Json
+          generated_at?: string | null
+          id?: string
+          organization_id?: string
+          sent_at?: string | null
+          sent_to_email?: string | null
+          signed_at?: string | null
+          snapshot?: Json | null
+          status?: string
+          template_id?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracts_client_organization_fkey"
+            columns: ["client_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "contracts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_template_organization_fkey"
+            columns: ["template_id", "organization_id"]
+            isOneToOne: false
+            referencedRelation: "contract_templates"
+            referencedColumns: ["id", "organization_id"]
+          },
+          {
+            foreignKeyName: "contracts_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       demand_assignees: {
         Row: {
           created_at: string
@@ -409,6 +563,66 @@ export type Database = {
             columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          bucket_id: string
+          created_at: string
+          created_by: string
+          entity_id: string
+          entity_type: string
+          file_name: string
+          id: string
+          kind: string
+          mime_type: string
+          object_path: string
+          organization_id: string
+          size_bytes: number
+        }
+        Insert: {
+          bucket_id?: string
+          created_at?: string
+          created_by: string
+          entity_id: string
+          entity_type: string
+          file_name: string
+          id: string
+          kind: string
+          mime_type?: string
+          object_path: string
+          organization_id: string
+          size_bytes: number
+        }
+        Update: {
+          bucket_id?: string
+          created_at?: string
+          created_by?: string
+          entity_id?: string
+          entity_type?: string
+          file_name?: string
+          id?: string
+          kind?: string
+          mime_type?: string
+          object_path?: string
+          organization_id?: string
+          size_bytes?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -673,6 +887,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      activate_contract_template: {
+        Args: { p_template_id: string }
+        Returns: string
+      }
       add_organization_member: {
         Args: { p_email: string; p_role?: string }
         Returns: string
@@ -685,6 +903,7 @@ export type Database = {
         Returns: string
       }
       bootstrap_initial_organization: { Args: never; Returns: string }
+      cancel_contract: { Args: { p_contract_id: string }; Returns: string }
       change_demand_status: {
         Args: { p_demand_id: string; p_status: string }
         Returns: string
@@ -711,6 +930,19 @@ export type Database = {
         }
         Returns: string
       }
+      create_contract: {
+        Args: {
+          p_client_id: string
+          p_draft_data?: Json
+          p_template_id: string
+          p_title: string
+        }
+        Returns: string
+      }
+      create_contract_template: {
+        Args: { p_content: string; p_name: string }
+        Returns: string
+      }
       create_demand: {
         Args: {
           p_assignee_membership_ids?: string[]
@@ -735,6 +967,22 @@ export type Database = {
           p_payment_nature?: string
           p_reference_date: string
           p_type: string
+        }
+        Returns: string
+      }
+      deactivate_contract_template: {
+        Args: { p_template_id: string }
+        Returns: string
+      }
+      generate_contract: {
+        Args: {
+          p_contract_id: string
+          p_document_id: string
+          p_file_name: string
+          p_mime_type: string
+          p_object_path: string
+          p_size_bytes: number
+          p_snapshot: Json
         }
         Returns: string
       }
@@ -775,6 +1023,21 @@ export type Database = {
           role: string
         }[]
       }
+      mark_contract_sent: {
+        Args: { p_contract_id: string; p_recipient_email: string }
+        Returns: string
+      }
+      mark_contract_signed: {
+        Args: {
+          p_contract_id: string
+          p_document_id: string
+          p_file_name: string
+          p_mime_type: string
+          p_object_path: string
+          p_size_bytes: number
+        }
+        Returns: string
+      }
       remove_client_access: {
         Args: { p_client_id: string; p_membership_id: string }
         Returns: string
@@ -814,6 +1077,10 @@ export type Database = {
         }
         Returns: string
       }
+      update_contract_template: {
+        Args: { p_content: string; p_name: string; p_template_id: string }
+        Returns: string
+      }
       update_demand: {
         Args: {
           p_demand_id: string
@@ -822,6 +1089,16 @@ export type Database = {
           p_notes?: string
           p_priority?: string
           p_start_date?: string
+          p_title: string
+        }
+        Returns: string
+      }
+      update_draft_contract: {
+        Args: {
+          p_client_id: string
+          p_contract_id: string
+          p_draft_data?: Json
+          p_template_id: string
           p_title: string
         }
         Returns: string

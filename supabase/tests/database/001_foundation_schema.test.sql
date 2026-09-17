@@ -11,7 +11,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 
 
-select plan(21);
+select plan(19);
 
 
 
@@ -53,23 +53,8 @@ select has_table(
 -- 2. TABELAS AINDA FORA DO MVP ATUAL NÃO DEVEM EXISTIR
 -- ============================================================
 
--- clients, client_assignments, demands e financial_entries deixaram de ser
--- "futuras" após as Migrations das Sprints 02, 03 e 04. Suas estruturas são
--- validadas nas suítes específicas desses módulos.
-
-
-select hasnt_table(
-  'public',
-  'contracts',
-  'contracts ainda não deve existir nesta etapa'
-);
-
-
-select hasnt_table(
-  'public',
-  'documents',
-  'documents ainda não deve existir nesta etapa'
-);
+-- As tabelas das Sprints concluídas são validadas nas suítes específicas de
+-- cada módulo. Esta suíte mantém somente a negação de domínios fora do MVP.
 
 
 select hasnt_table(
