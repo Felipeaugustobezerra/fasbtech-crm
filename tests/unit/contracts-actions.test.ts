@@ -20,18 +20,21 @@ const mocks = vi.hoisted(() => ({
   deactivateContractTemplate: vi.fn(),
   createContract: vi.fn(),
   updateDraftContract: vi.fn(),
-  generateContract: vi.fn(),
-  markContractSent: vi.fn(),
-  markContractSigned: vi.fn(),
   cancelContract: vi.fn(),
 }));
 
+const workflowMocks = vi.hoisted(() => ({
+  generateContractDocument: vi.fn(),
+  sendContractDocument: vi.fn(),
+  uploadSignedCopyAndMarkSigned: vi.fn(),
+}));
+
 vi.mock("@/services/contracts/contract.service", () => mocks);
+vi.mock("@/services/contracts/contract-document.service", () => workflowMocks);
 
 const clientId = "11111111-1111-4111-8111-111111111111";
 const templateId = "22222222-2222-4222-8222-222222222222";
 const contractId = "33333333-3333-4333-8333-333333333333";
-const documentId = "44444444-4444-4444-8444-444444444444";
 
 const draftContent = {
   client_id: clientId,
@@ -53,17 +56,12 @@ const snapshot = {
   template: { id: templateId, name: "  Contrato de Serviços  " },
 };
 
-const documentReference = {
-  document_id: documentId,
-  object_path: `  org/contracts/${contractId}/${documentId}/ORIGINAL_PDF.pdf  `,
-  file_name: "  contract.pdf  ",
-  mime_type: "application/pdf",
-  size_bytes: 1024,
-};
-
 describe("Contracts actions", () => {
   beforeEach(() => {
     for (const mock of Object.values(mocks)) {
+      mock.mockReset().mockResolvedValue(contractId);
+    }
+    for (const mock of Object.values(workflowMocks)) {
       mock.mockReset().mockResolvedValue(contractId);
     }
 
@@ -138,10 +136,11 @@ describe("Contracts actions", () => {
     await generateContractAction({
       contract_id: contractId,
       snapshot,
-      ...documentReference,
     });
 
-    expect(mocks.generateContract).toHaveBeenCalledExactlyOnceWith({
+    expect(
+      workflowMocks.generateContractDocument,
+    ).toHaveBeenCalledExactlyOnceWith({
       contract_id: contractId,
       snapshot: {
         ...snapshot,
@@ -156,10 +155,21 @@ describe("Contracts actions", () => {
           name: "Contrato de Serviços",
         },
       },
-      ...documentReference,
-      object_path: documentReference.object_path.trim(),
-      file_name: "contract.pdf",
     });
+  });
+
+  it("does not accept document paths or metadata from the browser", async () => {
+    const result = await generateContractAction({
+      contract_id: contractId,
+      snapshot,
+      object_path: "internal/path.pdf",
+    });
+
+    expect(result).toMatchObject({
+      success: false,
+      error: { code: "VALIDATION_ERROR" },
+    });
+    expect(workflowMocks.generateContractDocument).not.toHaveBeenCalled();
   });
 
   it("validates and normalizes the sent recipient", async () => {
@@ -168,23 +178,25 @@ describe("Contracts actions", () => {
       recipient_email: "  CLIENT@EXAMPLE.COM  ",
     });
 
-    expect(mocks.markContractSent).toHaveBeenCalledExactlyOnceWith({
+    expect(workflowMocks.sendContractDocument).toHaveBeenCalledExactlyOnceWith({
       contract_id: contractId,
       recipient_email: "client@example.com",
     });
   });
 
-  it("requires signed-copy metadata before calling the Service", async () => {
+  it("requires a signed PDF before calling the workflow Service", async () => {
+    const file = new File(["%PDF-1.7"], "signed.pdf", {
+      type: "application/pdf",
+    });
     await markContractSignedAction({
       contract_id: contractId,
-      ...documentReference,
-      object_path: documentReference.object_path.replace(
-        "ORIGINAL_PDF",
-        "SIGNED_COPY",
-      ),
+      file,
     });
 
-    expect(mocks.markContractSigned).toHaveBeenCalledOnce();
+    expect(workflowMocks.uploadSignedCopyAndMarkSigned).toHaveBeenCalledWith({
+      contract_id: contractId,
+      file,
+    });
 
     expect(
       await markContractSignedAction({ contract_id: contractId }),
@@ -192,7 +204,7 @@ describe("Contracts actions", () => {
       success: false,
       error: { code: "VALIDATION_ERROR" },
     });
-    expect(mocks.markContractSigned).toHaveBeenCalledOnce();
+    expect(workflowMocks.uploadSignedCopyAndMarkSigned).toHaveBeenCalledOnce();
   });
 
   it("validates cancellation and calls only its Service", async () => {
@@ -235,12 +247,11 @@ describe("Contracts actions", () => {
       run: (extra: object) => createContractAction({ ...draftContent, ...extra }),
     },
     {
-      service: "generateContract",
+      service: "generateContractDocument",
       run: (extra: object) =>
         generateContractAction({
           contract_id: contractId,
           snapshot,
-          ...documentReference,
           ...extra,
         }),
     },
@@ -250,7 +261,7 @@ describe("Contracts actions", () => {
         cancelContractAction({ contract_id: contractId, ...extra }),
     },
   ] satisfies Array<{
-    service: keyof typeof mocks;
+    service: keyof typeof mocks | keyof typeof workflowMocks;
     run: (extra: object) => Promise<unknown>;
   }>;
 
@@ -265,6 +276,9 @@ describe("Contracts actions", () => {
       });
 
       for (const mock of Object.values(mocks)) {
+        expect(mock).not.toHaveBeenCalled();
+      }
+      for (const mock of Object.values(workflowMocks)) {
         expect(mock).not.toHaveBeenCalled();
       }
     },

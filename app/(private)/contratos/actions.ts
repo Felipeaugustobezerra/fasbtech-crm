@@ -8,24 +8,28 @@ import {
   createContractSchema,
   createContractTemplateSchema,
   deactivateContractTemplateSchema,
-  generateContractSchema,
   markContractSentSchema,
-  markContractSignedSchema,
   updateContractTemplateSchema,
   updateDraftContractSchema,
 } from "@/schemas/contracts";
+import {
+  generateContractDocumentSchema,
+  uploadSignedCopySchema,
+} from "@/schemas/contract-documents";
 import {
   activateContractTemplate,
   cancelContract,
   createContract,
   createContractTemplate,
   deactivateContractTemplate,
-  generateContract,
-  markContractSent,
-  markContractSigned,
   updateContractTemplate,
   updateDraftContract,
 } from "@/services/contracts/contract.service";
+import {
+  generateContractDocument,
+  sendContractDocument,
+  uploadSignedCopyAndMarkSigned,
+} from "@/services/contracts/contract-document.service";
 
 type ContractActionErrorCode =
   | "VALIDATION_ERROR"
@@ -198,11 +202,11 @@ export async function updateDraftContractAction(
 export async function generateContractAction(
   input: unknown,
 ): Promise<ContractMutationActionResult> {
-  const parsed = generateContractSchema.safeParse(input);
+  const parsed = generateContractDocumentSchema.safeParse(input);
   if (!parsed.success) return validationFailure(parsed.error);
 
   return executeContractAction(
-    () => generateContract(parsed.data),
+    () => generateContractDocument(parsed.data),
     contractData,
   );
 }
@@ -214,7 +218,7 @@ export async function markContractSentAction(
   if (!parsed.success) return validationFailure(parsed.error);
 
   return executeContractAction(
-    () => markContractSent(parsed.data),
+    () => sendContractDocument(parsed.data),
     contractData,
   );
 }
@@ -222,11 +226,11 @@ export async function markContractSentAction(
 export async function markContractSignedAction(
   input: unknown,
 ): Promise<ContractMutationActionResult> {
-  const parsed = markContractSignedSchema.safeParse(input);
+  const parsed = uploadSignedCopySchema.safeParse(input);
   if (!parsed.success) return validationFailure(parsed.error);
 
   return executeContractAction(
-    () => markContractSigned(parsed.data),
+    () => uploadSignedCopyAndMarkSigned(parsed.data),
     contractData,
   );
 }
