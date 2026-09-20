@@ -846,6 +846,7 @@ Compreender:
 - [[docs/08-sprints/Sprint-03]]
 - [[docs/08-sprints/Sprint-04]]
 - [[docs/08-sprints/Sprint-05]]
+- [[docs/08-sprints/Sprint-06]]
 
 ---
 
@@ -943,6 +944,14 @@ Activity Logs correspondentes
 
 ---
 
+# Sprint 06 — Dashboard consolidado
+
+Status: Planejada e tecnicamente não iniciada
+
+Responsável por consolidar indicadores reais e autorizados de Clientes, Demandas, Financeiro, Contratos e Activity Logs, sem persistir agregados duplicados.
+
+---
+
 # Sprints Planejadas
 
 A sequência funcional aprovada é:
@@ -975,7 +984,7 @@ Próxima Sprint:
 
 ```text
 Sprint 06 — Dashboard consolidado
-Status: Não iniciada
+Status: Planejada e tecnicamente não iniciada
 ```
 
 Documentos específicos das Sprints futuras somente deverão ser criados quando o processo oficial exigir.
@@ -1309,6 +1318,7 @@ Este documento deverá permanecer sincronizado com:
 - Sprint 03 v3.0;
 - Sprint 04 v3.0;
 - Sprint 05 v3.0;
+- Sprint 06 v3.0;
 - Demands v3.0.
 - Financial v3.0.
 - Contracts v3.0.
@@ -1328,6 +1338,7 @@ Antes de considerar este documento atualizado verificar:
 - [ ] Sprint 03 está correta?
 - [ ] Sprint 04 está correta?
 - [ ] Sprint 05 está correta?
+- [ ] Sprint 06 está correta?
 - [ ] Roadmap de Sprints está correto?
 - [ ] Migrations está identificada como fonte de evolução persistente?
 - [ ] Migration 001 está limitada à Foundation?
@@ -1348,7 +1359,7 @@ O Project Index será considerado atualizado quando:
 - a ordem de leitura estiver sincronizada com o MVP v3.0;
 - a hierarquia documental estiver coerente;
 - as fontes da verdade de cada domínio estiverem explícitas;
-- Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05 e o estado da Sprint 06 estiverem atualizados;
+- Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05 e Sprint 06 estiverem atualizados;
 - o Roadmap de Sprints estiver correto;
 - a estratégia de migrations estiver corretamente representada;
 - Leads e Projects não forem tratados como módulos atuais;
