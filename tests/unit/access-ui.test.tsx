@@ -335,7 +335,7 @@ describe("access UI", () => {
     expect(reset).toHaveBeenCalledOnce();
   });
 
-  it("enables Access, Demand and Financial navigation while future modules stay disabled", () => {
+  it("enables Access, Demand, Financial and Contracts navigation for OWNER", () => {
     render(
       <AppShell
         organizationName="FASBtech"
@@ -365,13 +365,10 @@ describe("access UI", () => {
       expect(link).toHaveAttribute("href", "/financeiro");
     }
 
-    for (const label of ["Contratos"]) {
-      const disabledItems = screen.getAllByText(label);
-
-      for (const item of disabledItems) {
-        expect(item.closest('[aria-disabled="true"]')).not.toBeNull();
-      }
-      expect(screen.queryByRole("link", { name: label })).toBeNull();
+    const contractLinks = screen.getAllByRole("link", { name: "Contratos" });
+    expect(contractLinks).toHaveLength(2);
+    for (const link of contractLinks) {
+      expect(link).toHaveAttribute("href", "/contratos");
     }
   });
 
@@ -392,6 +389,8 @@ describe("access UI", () => {
       expect(screen.queryByText("Acessos")).toBeNull();
       expect(screen.queryByRole("link", { name: "Financeiro" })).toBeNull();
       expect(screen.queryByText("Financeiro")).toBeNull();
+      expect(screen.queryByRole("link", { name: "Contratos" })).toBeNull();
+      expect(screen.queryByText("Contratos")).toBeNull();
       expect(screen.getAllByRole("link", { name: "Clientes" })).toHaveLength(2);
     },
   );

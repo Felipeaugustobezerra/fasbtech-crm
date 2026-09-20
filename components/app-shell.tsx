@@ -33,7 +33,8 @@ const navigation = [
   {
     label: "Contratos",
     href: "/contratos",
-    enabled: false,
+    enabled: true,
+    ownerOnly: true,
   },
   {
     label: "Clientes",
