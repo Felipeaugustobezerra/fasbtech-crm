@@ -390,6 +390,51 @@ async function createFixtures(status: LocalSupabaseStatus) {
       `Unable to create the local E2E Financial Entry: ${financialResult.error.message}`,
     );
   }
+
+  const archivedClientResult = await supabase.from("clients").insert({
+    id: E2E_FIXTURES.contracts.archivedClient.id,
+    organization_id: E2E_FIXTURES.organization.id,
+    name: E2E_FIXTURES.contracts.archivedClient.name,
+    archived_at: new Date().toISOString(),
+    created_by: userId("owner"),
+    updated_by: userId("owner"),
+  });
+  if (archivedClientResult.error) throw new Error(`Unable to seed archived Contract Client: ${archivedClientResult.error.message}`);
+
+  const templateResult = await supabase.from("contract_templates").insert([
+    { id: E2E_FIXTURES.contracts.fixtureTemplate.id, organization_id: E2E_FIXTURES.organization.id, name: E2E_FIXTURES.contracts.fixtureTemplate.name, content: "Conteúdo base fixture Contratos", is_active: true, created_by: userId("owner"), updated_by: userId("owner") },
+    { id: E2E_FIXTURES.contracts.inactiveTemplate.id, organization_id: E2E_FIXTURES.organization.id, name: E2E_FIXTURES.contracts.inactiveTemplate.name, content: "Template propositalmente inativo", is_active: false, created_by: userId("owner"), updated_by: userId("owner") },
+  ]);
+  if (templateResult.error) throw new Error(`Unable to seed Contract Templates: ${templateResult.error.message}`);
+
+  const otherTemplateId = "60000000-0000-4000-8000-000000000003";
+  const otherTemplateResult = await supabase.from("contract_templates").insert({ id: otherTemplateId, organization_id: E2E_FIXTURES.otherOrganization.id, name: "Template Organization B", content: "Restrito", created_by: userId("otherOwner"), updated_by: userId("otherOwner") });
+  if (otherTemplateResult.error) throw new Error(`Unable to seed cross-Organization Template: ${otherTemplateResult.error.message}`);
+
+  const otherClientId = "63000000-0000-4000-8000-000000000002";
+  const otherClientResult = await supabase.from("clients").insert({ id: otherClientId, organization_id: E2E_FIXTURES.otherOrganization.id, name: "Cliente Organization B Contratos", created_by: userId("otherOwner"), updated_by: userId("otherOwner") });
+  if (otherClientResult.error) throw new Error(`Unable to seed cross-Organization Contract Client: ${otherClientResult.error.message}`);
+
+  const contractsResult = await supabase.from("contracts").insert([
+    { id: E2E_FIXTURES.contracts.sentForSignature.id, organization_id: E2E_FIXTURES.organization.id, client_id: E2E_FIXTURES.clients.clientA.id, template_id: E2E_FIXTURES.contracts.fixtureTemplate.id, title: E2E_FIXTURES.contracts.sentForSignature.title, draft_data: { content: "Snapshot para assinatura" }, created_by: userId("owner"), updated_by: userId("owner") },
+    { id: E2E_FIXTURES.contracts.sentForCancellation.id, organization_id: E2E_FIXTURES.organization.id, client_id: E2E_FIXTURES.clients.clientA.id, template_id: E2E_FIXTURES.contracts.fixtureTemplate.id, title: E2E_FIXTURES.contracts.sentForCancellation.title, draft_data: { content: "Snapshot para cancelamento" }, created_by: userId("owner"), updated_by: userId("owner") },
+    { id: E2E_FIXTURES.contracts.otherOrganization.id, organization_id: E2E_FIXTURES.otherOrganization.id, client_id: otherClientId, template_id: otherTemplateId, title: E2E_FIXTURES.contracts.otherOrganization.title, draft_data: { content: "Restrito" }, created_by: userId("otherOwner"), updated_by: userId("otherOwner") },
+  ]);
+  if (contractsResult.error) throw new Error(`Unable to seed Contracts: ${contractsResult.error.message}`);
+
+  const ownerClient = createClient(status.API_URL, privilegedKey, { auth: { autoRefreshToken: false, detectSessionInUrl: false, persistSession: false } });
+  const loginResult = await ownerClient.auth.signInWithPassword({ email: E2E_FIXTURES.owner.email, password: E2E_FIXTURES.owner.password });
+  if (loginResult.error) throw new Error(`Unable to authenticate OWNER Contract fixtures: ${loginResult.error.message}`);
+  const pdfBytes = new TextEncoder().encode("%PDF-1.4\n% FASBtech E2E\n%%EOF");
+  for (const fixture of [E2E_FIXTURES.contracts.sentForSignature, E2E_FIXTURES.contracts.sentForCancellation]) {
+    const objectPath = `${E2E_FIXTURES.organization.id}/contracts/${fixture.id}/${fixture.originalDocumentId}/ORIGINAL_PDF.pdf`;
+    const upload = await ownerClient.storage.from("private-files").upload(objectPath, pdfBytes, { contentType: "application/pdf", upsert: false });
+    if (upload.error) throw new Error(`Unable to upload Contract fixture PDF: ${upload.error.message}`);
+    const generated = await ownerClient.rpc("generate_contract", { p_contract_id: fixture.id, p_snapshot: { schema_version: 1, content: fixture === E2E_FIXTURES.contracts.sentForSignature ? "Snapshot para assinatura" : "Snapshot para cancelamento", client: { id: E2E_FIXTURES.clients.clientA.id, data: { name: E2E_FIXTURES.clients.clientA.name }, tax_id: null, tax_id_type: null }, manual_fields: {}, template: { id: E2E_FIXTURES.contracts.fixtureTemplate.id, name: E2E_FIXTURES.contracts.fixtureTemplate.name } }, p_document_id: fixture.originalDocumentId, p_object_path: objectPath, p_file_name: `${fixture.id}.pdf`, p_mime_type: "application/pdf", p_size_bytes: pdfBytes.byteLength });
+    if (generated.error) throw new Error(`Unable to generate Contract fixture: ${generated.error.message}`);
+    const sent = await ownerClient.rpc("mark_contract_sent", { p_contract_id: fixture.id, p_recipient_email: "client-contracts-e2e@example.test" });
+    if (sent.error) throw new Error(`Unable to mark Contract fixture SENT: ${sent.error.message}`);
+  }
 }
 
 export default async function globalSetup(config: FullConfig) {

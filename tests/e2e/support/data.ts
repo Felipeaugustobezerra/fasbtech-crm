@@ -62,4 +62,32 @@ export const E2E_FIXTURES = {
       description: "Movimentação restrita da Organization B",
     },
   },
+  contracts: {
+    fixtureTemplate: {
+      id: "60000000-0000-4000-8000-000000000001",
+      name: "Template Fixture Contratos",
+    },
+    inactiveTemplate: {
+      id: "60000000-0000-4000-8000-000000000002",
+      name: "Template Inativo E2E",
+    },
+    sentForSignature: {
+      id: "61000000-0000-4000-8000-000000000001",
+      title: "Contrato Enviado para Assinatura E2E",
+      originalDocumentId: "62000000-0000-4000-8000-000000000001",
+    },
+    sentForCancellation: {
+      id: "61000000-0000-4000-8000-000000000002",
+      title: "Contrato Enviado para Cancelamento E2E",
+      originalDocumentId: "62000000-0000-4000-8000-000000000002",
+    },
+    otherOrganization: {
+      id: "61000000-0000-4000-8000-000000000003",
+      title: "Contrato Restrito Organization B E2E",
+    },
+    archivedClient: {
+      id: "63000000-0000-4000-8000-000000000001",
+      name: "Cliente Arquivado Contratos E2E",
+    },
+  },
 } as const;
