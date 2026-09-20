@@ -14,7 +14,7 @@ FASBtech CRM
 
 ## Status
 
-🟡 Contrato físico congelado — implementação não iniciada
+🟢 Implementado na Sprint 05
 
 ---
 
@@ -26,7 +26,7 @@ Setembro de 2026
 
 # Objetivo
 
-Este documento congela o contrato físico da Sprint 05 — Contratos antes da Migration 005. Não cria migration, SQL, código ou testes.
+Este documento registra o contrato físico implementado na Sprint 05 — Contratos pela Migration 005.
 
 Define tabelas, constraints, lifecycle, snapshot, documentos privados, autorização, RLS, Grants, RPCs, Activity Logs e índices mínimos.
 
@@ -647,21 +647,18 @@ Triggers de integridade não substituem autorização, RLS ou RPCs.
 
 ---
 
-# Testes Físicos Planejados
+# Testes Físicos Implementados
 
-Quando a migration for implementada, pgTAP deverá cobrir schema, constraints, lifecycle, imutabilidade, cross-Organization, Cliente arquivado, Template inativo, snapshot, documentos, RLS OWNER-only, Grants, hardening, Activity Logs, Storage e Data Leakage.
-
-Testes de concorrência deverão cobrir geração, envio, assinatura e ativação/desativação simultâneas quando aplicável.
+Os testes pgTAP cobrem schema, constraints, lifecycle, imutabilidade, cross-Organization, Cliente arquivado, Template inativo, snapshot, documentos, RLS OWNER-only, Grants, hardening, Activity Logs, Storage e Data Leakage.
 
 ---
 
-# Decisões Técnicas Posteriores sem Impacto no Schema
+# Decisões Técnicas sem Impacto no Schema
 
-- biblioteca de PDF;
-- provider e mecanismo de entrega de e-mail;
-- retry/idempotência do provider sem fila;
+- geração de PDF com `pdf-lib`;
+- envio de e-mail com Resend;
 - editor simples do Template;
-- limites operacionais finais de upload, respeitando a migration.
+- limites operacionais de upload respeitando a Migration 005.
 
 Essas escolhas não reabrem schema, lifecycle, autorização ou snapshot.
 
@@ -673,7 +670,7 @@ Essas escolhas não reabrem schema, lifecycle, autorização ou snapshot.
 Nenhum.
 ```
 
-O contrato está pronto para ser traduzido na Migration 005. Divergência encontrada durante a implementação deverá interromper a migration e retornar à documentação.
+O contrato foi traduzido na Migration 005 e validado pelos testes automatizados da Sprint 05.
 
 ---
 

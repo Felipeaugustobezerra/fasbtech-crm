@@ -170,11 +170,14 @@ Sprint 04 — Financeiro
 Status: Concluída
 
 Sprint 05 — Contratos
-Status: Planejada e tecnicamente não iniciada
+Status: Concluída
+
+Sprint 06 — Dashboard consolidado
+Status: Não iniciada
 ```
 
 A Foundation foi concluída na Sprint 01, Clientes & Acessos na Sprint 02,
-Demandas na Sprint 03 e Financeiro na Sprint 04.
+Demandas na Sprint 03, Financeiro na Sprint 04 e Contratos na Sprint 05.
 
 ---
 

@@ -443,6 +443,7 @@ Compreender:
 - [[docs/04-database/Bootstrap]]
 - [[docs/04-database/Demands]]
 - [[docs/04-database/Financial]]
+- [[docs/04-database/Contracts]]
 
 ---
 
@@ -925,7 +926,20 @@ Activity Logs correspondentes
 
 # Sprint 05 — Contratos
 
-Status: Planejada e tecnicamente não iniciada
+Status: Concluída
+
+Responsável por:
+
+```text
+Templates de Contratos
+Contratos e lifecycle
+Snapshot imutável
+PDF e documentos privados
+Envio por e-mail
+Cópia assinada
+Autorização OWNER-only
+Activity Logs correspondentes
+```
 
 ---
 
@@ -960,8 +974,8 @@ Sprint 06 — Dashboard
 Próxima Sprint:
 
 ```text
-Sprint 05 — Contratos
-Status: Planejada e tecnicamente não iniciada
+Sprint 06 — Dashboard consolidado
+Status: Não iniciada
 ```
 
 Documentos específicos das Sprints futuras somente deverão ser criados quando o processo oficial exigir.
@@ -1294,8 +1308,10 @@ Este documento deverá permanecer sincronizado com:
 - Sprint 02 v3.0;
 - Sprint 03 v3.0;
 - Sprint 04 v3.0;
+- Sprint 05 v3.0;
 - Demands v3.0.
 - Financial v3.0.
+- Contracts v3.0.
 
 ---
 
@@ -1311,6 +1327,7 @@ Antes de considerar este documento atualizado verificar:
 - [ ] Sprint 02 está correta?
 - [ ] Sprint 03 está correta?
 - [ ] Sprint 04 está correta?
+- [ ] Sprint 05 está correta?
 - [ ] Roadmap de Sprints está correto?
 - [ ] Migrations está identificada como fonte de evolução persistente?
 - [ ] Migration 001 está limitada à Foundation?
@@ -1331,7 +1348,7 @@ O Project Index será considerado atualizado quando:
 - a ordem de leitura estiver sincronizada com o MVP v3.0;
 - a hierarquia documental estiver coerente;
 - as fontes da verdade de cada domínio estiverem explícitas;
-- Sprint 01, Sprint 02, Sprint 03, Sprint 04 e o estado da Sprint 05 estiverem atualizados;
+- Sprint 01, Sprint 02, Sprint 03, Sprint 04, Sprint 05 e o estado da Sprint 06 estiverem atualizados;
 - o Roadmap de Sprints estiver correto;
 - a estratégia de migrations estiver corretamente representada;
 - Leads e Projects não forem tratados como módulos atuais;

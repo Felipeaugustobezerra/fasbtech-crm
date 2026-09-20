@@ -14,7 +14,7 @@ FASBtech CRM
 
 ## Status
 
-Planejada e tecnicamente não iniciada
+Concluída
 
 ---
 
@@ -26,9 +26,9 @@ Setembro de 2026
 
 # Estado da Sprint
 
-Este documento registra o planejamento funcional e técnico inicial da Sprint 05.
+Este documento registra o contrato funcional, a execução e o encerramento da Sprint 05.
 
-A Sprint possui contrato físico congelado em `docs/04-database/Contracts.md`, mas ainda não possui Migration 005, implementação ou testes.
+A Sprint possui contrato físico em `docs/04-database/Contracts.md`, Migration 005, implementação completa e testes automatizados.
 
 Este documento separa explicitamente:
 
@@ -242,7 +242,7 @@ Quando o Contrato for gerado, deverão ser preservados de modo imutável:
 
 Alterações futuras no Cliente ou no template não poderão alterar retroativamente esse conteúdo.
 
-A representação física do snapshot ainda não está congelada.
+A representação física do snapshot utiliza `JSONB`, conforme congelado e implementado em `docs/04-database/Contracts.md`.
 
 ## Armazenamento
 
@@ -356,7 +356,7 @@ Não haverá colunas fiscais próprias no Contract. Os valores editáveis perman
 
 ## Documentos
 
-A infraestrutura atual possui bucket privado base no Supabase Storage, mas ainda não possui entidade física central de metadados `documents` congelada.
+A infraestrutura utiliza o bucket privado base do Supabase Storage e a entidade física central de metadados `documents`.
 
 As fontes exigem:
 
@@ -425,7 +425,7 @@ O snapshot completo não deverá ser armazenado no Activity Log.
 
 # C. Decisões Físicas Congeladas
 
-As decisões físicas desta seção foram fechadas em `docs/04-database/Contracts.md`. A Migration 005 deverá traduzi-las sem reabrir o contrato silenciosamente.
+As decisões físicas desta seção foram fechadas em `docs/04-database/Contracts.md` e implementadas pela Migration 005.
 
 ## Schema físico de Contract
 
@@ -506,7 +506,7 @@ O contrato define:
 
 O PDF será gerado a partir do snapshot. Falha na geração ou persistência do PDF mantém o Contract em `DRAFT` e não registra `GENERATED`.
 
-A biblioteca concreta permanece decisão técnica sem impacto no schema.
+A geração de PDF utiliza `pdf-lib`, sem impacto no schema.
 
 ## Envio por e-mail
 
@@ -514,12 +514,7 @@ O destinatário padrão é o e-mail do Cliente. Um override manual poderá ser i
 
 O Contract somente passará para `SENT` após confirmação de sucesso. Falha de envio mantém o Status anterior. Não haverá fila, cron ou scheduler nesta Sprint.
 
-Permanecem decisões técnicas:
-
-- provider e configuração de ambiente;
-- mecanismo de anexo ou entrega;
-- idempotência e política de repetição;
-- fronteira entre confirmação externa, persistência de `sent_at` e Activity Log.
+O envio utiliza Resend, configurado por `RESEND_API_KEY` e `CONTRACTS_EMAIL_FROM`. O estado `SENT`, `sent_at` e o Activity Log somente são persistidos após o provider confirmar o envio.
 
 ## Cópia assinada
 
@@ -533,7 +528,7 @@ O contrato físico define:
 - substituição, versionamento ou proibição de nova cópia assinada;
 - comportamento em falhas parciais.
 
-A cópia assinada não substitui nem elimina o PDF original gerado. Formatos, limites e vínculo físico seguem `Contracts.md` e a futura migration.
+A cópia assinada não substitui nem elimina o PDF original gerado. Formatos, limites e vínculo físico seguem `Contracts.md` e a Migration 005.
 
 ## Cliente e autofill
 
@@ -613,7 +608,7 @@ A geração deverá produzir uma unidade consistente contendo:
 - metadata documental necessária;
 - Activity Log obrigatório.
 
-O limite transacional entre banco, geração do arquivo e Storage deverá ser definido antes da implementação para evitar estado parcialmente gerado.
+O fluxo implementado gera o PDF, envia o objeto ao Storage e somente então conclui `GENERATED` pela RPC. Se a etapa transacional falhar, o objeto órfão é removido por compensação controlada.
 
 ## Envio
 
@@ -644,13 +639,13 @@ Requisitos conceituais:
 
 Falha na geração ou persistência não altera o Contract para `GENERATED`.
 
-Não será escolhida biblioteca nesta etapa.
+A geração server-side utiliza `pdf-lib`.
 
 ---
 
 # Documents e Storage
 
-O bucket privado base existente será reutilizado. Ele não substitui o contrato de metadata documental ainda necessário.
+O bucket privado base existente é reutilizado em conjunto com a metadata central da tabela `documents`.
 
 Fluxo conceitual:
 
@@ -694,7 +689,7 @@ O conteúdo completo do snapshot e dos documentos não deverá ser copiado para 
 
 ---
 
-# UI Planejada
+# UI Implementada
 
 Rotas conceituais:
 
@@ -713,7 +708,7 @@ Uma rota de administração como:
 
 será restrita ao `OWNER`, responsável exclusivo pela administração de templates.
 
-Capacidades conceituais:
+Capacidades entregues:
 
 - listagem autorizada;
 - pesquisa, filtros, ordenação e paginação definidos posteriormente pelo contrato de Query;
@@ -733,38 +728,30 @@ A interface poderá ocultar affordances sem permissão, mas não substituirá a 
 
 ---
 
-# Plano Técnico Após o Congelamento
+# Entregas Técnicas Concluídas
 
-A ordem recomendada de implementação é:
-
-```text
-1. Traduzir `Contracts.md` na Migration 005
-2. Implementar RLS, Grants, RPCs, Documents e Activity Logs congelados
-3. Validar schema e segurança no banco local
-4. Implementar pgTAP e testes de concorrência aplicáveis
-5. Regenerar tipos do banco
-6. Implementar Types + Validation
-7. Implementar Queries
-8. Implementar RPC adapters e Services
-9. Implementar Server Actions
-10. Implementar geração de PDF e integração de Storage
-11. Implementar envio por e-mail
-12. Implementar UI
-13. Implementar E2E
-14. Validar e fechar documentalmente a Sprint
-```
-
-Essa sequência está autorizada documentalmente. Divergência real durante a migration deverá interromper a implementação e retornar à documentação.
+- `contract_templates`, `contracts` e `documents`;
+- snapshot imutável e lifecycle completo;
+- RLS `OWNER`-only, Grants mínimos e dez RPCs;
+- Activity Logs centralizados;
+- Types e Validation;
+- Queries, Services e Server Actions;
+- geração de PDF privado com `pdf-lib`;
+- Storage privado e download autorizado;
+- envio por e-mail com Resend;
+- upload e preservação separada da `SIGNED_COPY`;
+- UI completa de Contratos e Templates;
+- testes pgTAP, unitários, de aplicação e E2E.
 
 ---
 
-# Blockers Físicos Antes da Migration
+# Blockers Finais
 
 ```text
 Nenhum.
 ```
 
-Biblioteca de PDF, provider de e-mail e detalhes de apresentação permanecem decisões de implementação sem impacto no schema.
+Não existem blockers técnicos pendentes para o encerramento da Sprint 05.
 
 ---
 
@@ -803,15 +790,58 @@ Esta Sprint não deverá implementar:
 
 ---
 
-# Critério para Iniciar a Migration 005
+# Resultado
 
-A Migration 005 está documentalmente autorizada porque `Contracts.md` congela schema, snapshot, Documents, lifecycle, autorização, RPCs, Activity Logs e índices.
+Sprint 05 — Contratos concluída.
 
-Durante a implementação, conflito real com migrations existentes deverá interromper o trabalho e retornar à documentação.
-
-Até lá:
+O módulo implementa o lifecycle oficial:
 
 ```text
-Sprint 05 — Contratos
-Status: Planejada e tecnicamente não iniciada
+DRAFT → GENERATED → SENT → SIGNED
+          └──────────────→ CANCELED
+                    └────→ CANCELED
+```
+
+`SIGNED` e `CANCELED` são terminais. Após `GENERATED`, snapshot, Cliente e Template são imutáveis. `ORIGINAL_PDF` e `SIGNED_COPY` permanecem documentos privados separados. `ADMIN` e `MEMBER` não possuem acesso ao módulo.
+
+## Validações finais
+
+- pgTAP: 18 arquivos e 688 testes aprovados;
+- unit/app: 43 arquivos e 675 testes aprovados;
+- E2E: 33 testes aprovados, sendo 9 de Contratos;
+- database reset e database lint aprovados;
+- concorrência de Bootstrap, OWNER role e Financial Goal aprovada;
+- typecheck, lint, build e `git diff --check` aprovados.
+
+## Ressalva do envio externo
+
+O envio real via Resend não foi executado no E2E porque depende de `RESEND_API_KEY` e `CONTRACTS_EMAIL_FROM`. A semântica de sucesso e falha do provider e a regra de somente marcar `SENT` após sucesso estão cobertas por testes unitários. Nenhum bypass ou backdoor de teste foi criado.
+
+## Commits relevantes
+
+```text
+2b9ab68
+f2077b6
+b87ec13
+2bc52e6
+b3cfa4a
+e94894f
+6a4fb2e
+86c589c
+```
+
+## Lições Aprendidas
+
+- efeitos externos como Storage e e-mail exigem compensação controlada e transições de estado somente após sucesso confirmado;
+- o snapshot e os documentos separados preservam o histórico sem versionamento complexo de Templates;
+- autorização de documentos deve derivar do Contract e permanecer protegida por RLS e download server-side;
+- E2E não deve criar bypass de provider externo para simular sucesso de produção.
+
+---
+
+# Próxima Sprint
+
+```text
+Sprint 06 — Dashboard consolidado
+Status: Não iniciada
 ```
