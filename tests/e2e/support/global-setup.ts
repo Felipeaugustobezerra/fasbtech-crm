@@ -13,6 +13,30 @@ const EXPECTED_DATABASE_PORT = "54322";
 const EXPECTED_DATABASE_NAME = "postgres";
 const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1"]);
 
+function getLisbonFixturePeriod(now = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Lisbon",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+  const read = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((part) => part.type === type)?.value ?? "";
+  const year = Number(read("year"));
+  const month = Number(read("month"));
+  const civilDate = `${read("year")}-${read("month")}-${read("day")}`;
+  const previousMonth = month === 1 ? 12 : month - 1;
+  const previousMonthYear = month === 1 ? year - 1 : year;
+
+  return {
+    year,
+    month,
+    civilDate,
+    currentMonthDate: `${year}-${String(month).padStart(2, "0")}-01`,
+    previousMonthDate: `${previousMonthYear}-${String(previousMonth).padStart(2, "0")}-01`,
+  };
+}
+
 type LocalSupabaseStatus = Readonly<{
   API_URL: string;
   DB_URL: string;
@@ -206,6 +230,9 @@ async function createFixtures(status: LocalSupabaseStatus) {
     ["memberB", E2E_FIXTURES.memberB],
     ["admin", E2E_FIXTURES.admin],
     ["otherOwner", E2E_FIXTURES.otherOwner],
+    ["dashboardOwner", E2E_FIXTURES.dashboardOwner],
+    ["dashboardMember", E2E_FIXTURES.dashboardMember],
+    ["dashboardAdmin", E2E_FIXTURES.dashboardAdmin],
   ] as const;
   const userIds = new Map<(typeof actors)[number][0], string>();
 
@@ -243,6 +270,12 @@ async function createFixtures(status: LocalSupabaseStatus) {
       id: E2E_FIXTURES.otherOrganization.id,
       name: E2E_FIXTURES.otherOrganization.name,
       slug: E2E_FIXTURES.otherOrganization.slug,
+      status: "ACTIVE",
+    },
+    {
+      id: E2E_FIXTURES.dashboardOrganization.id,
+      name: E2E_FIXTURES.dashboardOrganization.name,
+      slug: E2E_FIXTURES.dashboardOrganization.slug,
       status: "ACTIVE",
     },
   ]);
@@ -301,6 +334,27 @@ async function createFixtures(status: LocalSupabaseStatus) {
       organization_id: E2E_FIXTURES.otherOrganization.id,
       user_id: userId("otherOwner"),
       role: "OWNER",
+      status: "ACTIVE",
+    },
+    {
+      id: E2E_FIXTURES.dashboardOwner.membershipId,
+      organization_id: E2E_FIXTURES.dashboardOrganization.id,
+      user_id: userId("dashboardOwner"),
+      role: "OWNER",
+      status: "ACTIVE",
+    },
+    {
+      id: E2E_FIXTURES.dashboardMember.membershipId,
+      organization_id: E2E_FIXTURES.dashboardOrganization.id,
+      user_id: userId("dashboardMember"),
+      role: "MEMBER",
+      status: "ACTIVE",
+    },
+    {
+      id: E2E_FIXTURES.dashboardAdmin.membershipId,
+      organization_id: E2E_FIXTURES.dashboardOrganization.id,
+      user_id: userId("dashboardAdmin"),
+      role: "ADMIN",
       status: "ACTIVE",
     },
   ]);
@@ -434,6 +488,329 @@ async function createFixtures(status: LocalSupabaseStatus) {
     if (generated.error) throw new Error(`Unable to generate Contract fixture: ${generated.error.message}`);
     const sent = await ownerClient.rpc("mark_contract_sent", { p_contract_id: fixture.id, p_recipient_email: "client-contracts-e2e@example.test" });
     if (sent.error) throw new Error(`Unable to mark Contract fixture SENT: ${sent.error.message}`);
+  }
+
+  const dashboard = E2E_FIXTURES.dashboard;
+  const dashboardOrganizationId = E2E_FIXTURES.dashboardOrganization.id;
+  const dashboardOwnerId = userId("dashboardOwner");
+  const dashboardPeriod = getLisbonFixturePeriod();
+  const dashboardClients = await supabase.from("clients").insert([
+    {
+      id: dashboard.assignedClientId,
+      organization_id: dashboardOrganizationId,
+      name: "Cliente atribuído Dashboard E2E",
+      created_by: dashboardOwnerId,
+      updated_by: dashboardOwnerId,
+    },
+    {
+      id: dashboard.restrictedClientId,
+      organization_id: dashboardOrganizationId,
+      name: "Cliente restrito Dashboard E2E",
+      created_by: dashboardOwnerId,
+      updated_by: dashboardOwnerId,
+    },
+  ]);
+  if (dashboardClients.error) {
+    throw new Error(`Unable to seed Dashboard Clients: ${dashboardClients.error.message}`);
+  }
+
+  const dashboardAssignment = await supabase.from("client_assignments").insert({
+    client_id: dashboard.assignedClientId,
+    membership_id: E2E_FIXTURES.dashboardMember.membershipId,
+    created_by: dashboardOwnerId,
+  });
+  if (dashboardAssignment.error) {
+    throw new Error(`Unable to seed Dashboard Client Assignment: ${dashboardAssignment.error.message}`);
+  }
+
+  const dashboardDemands = await supabase.from("demands").insert([
+    {
+      id: dashboard.assignedOverdueDemandId,
+      organization_id: dashboardOrganizationId,
+      client_id: dashboard.assignedClientId,
+      title: "Demanda atribuída atrasada Dashboard E2E",
+      status: "OPEN",
+      priority: "HIGH",
+      due_date: dashboardPeriod.previousMonthDate,
+      created_by: dashboardOwnerId,
+      updated_by: dashboardOwnerId,
+    },
+    {
+      id: dashboard.assignedCompletedDemandId,
+      organization_id: dashboardOrganizationId,
+      client_id: dashboard.assignedClientId,
+      title: "Demanda atribuída concluída Dashboard E2E",
+      status: "COMPLETED",
+      priority: "LOW",
+      due_date: dashboardPeriod.civilDate,
+      created_by: dashboardOwnerId,
+      updated_by: dashboardOwnerId,
+    },
+    {
+      id: dashboard.restrictedDemandId,
+      organization_id: dashboardOrganizationId,
+      client_id: dashboard.restrictedClientId,
+      title: "Demanda restrita Dashboard E2E",
+      status: "IN_PROGRESS",
+      priority: "MEDIUM",
+      due_date: null,
+      created_by: dashboardOwnerId,
+      updated_by: dashboardOwnerId,
+    },
+  ]);
+  if (dashboardDemands.error) {
+    throw new Error(`Unable to seed Dashboard Demands: ${dashboardDemands.error.message}`);
+  }
+
+  const dashboardFinancialEntries = await supabase.from("financial_entries").insert([
+    {
+      organization_id: dashboardOrganizationId,
+      type: "INCOME",
+      status: "REALIZED",
+      payment_nature: "ONE_TIME",
+      description: "Entrada mensal Dashboard E2E",
+      amount: 1000,
+      reference_date: dashboardPeriod.currentMonthDate,
+      realized_date: dashboardPeriod.currentMonthDate,
+      created_by: dashboardOwnerId,
+      updated_by: dashboardOwnerId,
+    },
+    {
+      organization_id: dashboardOrganizationId,
+      type: "EXPENSE",
+      status: "REALIZED",
+      payment_nature: "ONE_TIME",
+      description: "Saída mensal Dashboard E2E",
+      amount: 250,
+      reference_date: dashboardPeriod.currentMonthDate,
+      realized_date: dashboardPeriod.currentMonthDate,
+      created_by: dashboardOwnerId,
+      updated_by: dashboardOwnerId,
+    },
+    {
+      organization_id: dashboardOrganizationId,
+      type: "INCOME",
+      status: "REALIZED",
+      payment_nature: "ONE_TIME",
+      description: "Entrada anterior Dashboard E2E",
+      amount: 100,
+      reference_date: dashboardPeriod.previousMonthDate,
+      realized_date: dashboardPeriod.previousMonthDate,
+      created_by: dashboardOwnerId,
+      updated_by: dashboardOwnerId,
+    },
+  ]);
+  if (dashboardFinancialEntries.error) {
+    throw new Error(`Unable to seed Dashboard Financial Entries: ${dashboardFinancialEntries.error.message}`);
+  }
+
+  const dashboardGoal = await supabase.from("financial_goals").insert({
+    organization_id: dashboardOrganizationId,
+    year: dashboardPeriod.year,
+    month: dashboardPeriod.month,
+    target_amount: 2000,
+    created_by: dashboardOwnerId,
+    updated_by: dashboardOwnerId,
+  });
+  if (dashboardGoal.error) {
+    throw new Error(`Unable to seed Dashboard Financial Goal: ${dashboardGoal.error.message}`);
+  }
+
+  const dashboardTemplate = await supabase.from("contract_templates").insert({
+    id: dashboard.templateId,
+    organization_id: dashboardOrganizationId,
+    name: "Template Dashboard E2E",
+    content: "Conteúdo do Template Dashboard E2E",
+    created_by: dashboardOwnerId,
+    updated_by: dashboardOwnerId,
+  });
+  if (dashboardTemplate.error) {
+    throw new Error(`Unable to seed Dashboard Contract Template: ${dashboardTemplate.error.message}`);
+  }
+
+  const snapshot = {
+    schema_version: 1,
+    content: "Snapshot Dashboard E2E",
+    client: {
+      id: dashboard.assignedClientId,
+      data: { name: "Cliente atribuído Dashboard E2E" },
+      tax_id: null,
+      tax_id_type: null,
+    },
+    manual_fields: {},
+    template: { id: dashboard.templateId, name: "Template Dashboard E2E" },
+  };
+  const dashboardContracts = await supabase.from("contracts").insert([
+    {
+      id: dashboard.draftContractId,
+      organization_id: dashboardOrganizationId,
+      client_id: dashboard.assignedClientId,
+      template_id: dashboard.templateId,
+      title: "Contrato DRAFT Dashboard E2E",
+      status: "DRAFT",
+      created_by: dashboardOwnerId,
+      updated_by: dashboardOwnerId,
+    },
+    {
+      id: dashboard.generatedContractId,
+      organization_id: dashboardOrganizationId,
+      client_id: dashboard.assignedClientId,
+      template_id: dashboard.templateId,
+      title: "Contrato GENERATED Dashboard E2E",
+      status: "DRAFT",
+      created_by: dashboardOwnerId,
+      updated_by: dashboardOwnerId,
+    },
+    {
+      id: dashboard.sentContractId,
+      organization_id: dashboardOrganizationId,
+      client_id: dashboard.assignedClientId,
+      template_id: dashboard.templateId,
+      title: "Contrato SENT Dashboard E2E",
+      status: "DRAFT",
+      created_by: dashboardOwnerId,
+      updated_by: dashboardOwnerId,
+    },
+    {
+      id: dashboard.signedContractId,
+      organization_id: dashboardOrganizationId,
+      client_id: dashboard.assignedClientId,
+      template_id: dashboard.templateId,
+      title: "Contrato SIGNED Dashboard E2E",
+      status: "DRAFT",
+      created_by: dashboardOwnerId,
+      updated_by: dashboardOwnerId,
+    },
+    {
+      id: dashboard.canceledContractId,
+      organization_id: dashboardOrganizationId,
+      client_id: dashboard.assignedClientId,
+      template_id: dashboard.templateId,
+      title: "Contrato CANCELED Dashboard E2E",
+      status: "DRAFT",
+      created_by: dashboardOwnerId,
+      updated_by: dashboardOwnerId,
+    },
+  ]);
+  if (dashboardContracts.error) {
+    throw new Error(`Unable to seed Dashboard Contracts: ${dashboardContracts.error.message}`);
+  }
+
+  const dashboardOwnerClient = createClient(status.API_URL, privilegedKey, {
+    auth: {
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+      persistSession: false,
+    },
+  });
+  const dashboardLogin = await dashboardOwnerClient.auth.signInWithPassword({
+    email: E2E_FIXTURES.dashboardOwner.email,
+    password: E2E_FIXTURES.dashboardOwner.password,
+  });
+  if (dashboardLogin.error) {
+    throw new Error(`Unable to authenticate Dashboard OWNER: ${dashboardLogin.error.message}`);
+  }
+
+  const dashboardPdf = new TextEncoder().encode("%PDF-1.4\n% Dashboard E2E\n%%EOF");
+  async function generateDashboardContract(contractId: string, documentSuffix: string) {
+    const documentId = `62000000-0000-4000-8000-0000000000${documentSuffix}`;
+    const objectPath = `${dashboardOrganizationId}/contracts/${contractId}/${documentId}/ORIGINAL_PDF.pdf`;
+    const upload = await dashboardOwnerClient.storage
+      .from("private-files")
+      .upload(objectPath, dashboardPdf, {
+        contentType: "application/pdf",
+        upsert: false,
+      });
+    if (upload.error) {
+      throw new Error(`Unable to upload Dashboard Contract PDF: ${upload.error.message}`);
+    }
+    const generated = await dashboardOwnerClient.rpc("generate_contract", {
+      p_contract_id: contractId,
+      p_snapshot: snapshot,
+      p_document_id: documentId,
+      p_object_path: objectPath,
+      p_file_name: `${contractId}.pdf`,
+      p_mime_type: "application/pdf",
+      p_size_bytes: dashboardPdf.byteLength,
+    });
+    if (generated.error) {
+      throw new Error(`Unable to generate Dashboard Contract: ${generated.error.message}`);
+    }
+  }
+
+  await generateDashboardContract(dashboard.generatedContractId, "11");
+  await generateDashboardContract(dashboard.sentContractId, "12");
+  await generateDashboardContract(dashboard.signedContractId, "13");
+  await generateDashboardContract(dashboard.canceledContractId, "14");
+
+  for (const contractId of [dashboard.sentContractId, dashboard.signedContractId]) {
+    const sent = await dashboardOwnerClient.rpc("mark_contract_sent", {
+      p_contract_id: contractId,
+      p_recipient_email: "dashboard-client@example.test",
+    });
+    if (sent.error) {
+      throw new Error(`Unable to mark Dashboard Contract SENT: ${sent.error.message}`);
+    }
+  }
+
+  const signedDocumentId = "62000000-0000-4000-8000-000000000015";
+  const signedObjectPath = `${dashboardOrganizationId}/contracts/${dashboard.signedContractId}/${signedDocumentId}/SIGNED_COPY.pdf`;
+  const signedUpload = await dashboardOwnerClient.storage
+    .from("private-files")
+    .upload(signedObjectPath, dashboardPdf, {
+      contentType: "application/pdf",
+      upsert: false,
+    });
+  if (signedUpload.error) {
+    throw new Error(`Unable to upload Dashboard signed copy: ${signedUpload.error.message}`);
+  }
+  const signed = await dashboardOwnerClient.rpc("mark_contract_signed", {
+    p_contract_id: dashboard.signedContractId,
+    p_document_id: signedDocumentId,
+    p_object_path: signedObjectPath,
+    p_file_name: "dashboard-signed-copy.pdf",
+    p_mime_type: "application/pdf",
+    p_size_bytes: dashboardPdf.byteLength,
+  });
+  if (signed.error) {
+    throw new Error(`Unable to mark Dashboard Contract SIGNED: ${signed.error.message}`);
+  }
+
+  const canceled = await dashboardOwnerClient.rpc("cancel_contract", {
+    p_contract_id: dashboard.canceledContractId,
+  });
+  if (canceled.error) {
+    throw new Error(`Unable to cancel Dashboard Contract: ${canceled.error.message}`);
+  }
+
+  const dashboardActivities: Array<{
+    organization_id: string;
+    user_id: string;
+    entity_type: string;
+    entity_id: string;
+    action: string;
+    created_at: string;
+  }> = Array.from({ length: 11 }, (_, index) => ({
+    organization_id: dashboardOrganizationId,
+    user_id: dashboardOwnerId,
+    entity_type: "DEMAND",
+    entity_id: dashboard.assignedOverdueDemandId,
+    action: "UPDATED",
+    created_at: `2026-09-${String(index + 1).padStart(2, "0")}T08:00:00.000Z`,
+  }));
+  dashboardActivities.push({
+    organization_id: dashboardOrganizationId,
+    user_id: dashboardOwnerId,
+    entity_type: "DEMAND",
+    entity_id: dashboard.restrictedDemandId,
+    action: "CREATED",
+    created_at: "2026-09-30T08:00:00.000Z",
+  });
+  const dashboardActivityResult = await supabase
+    .from("activity_logs")
+    .insert(dashboardActivities);
+  if (dashboardActivityResult.error) {
+    throw new Error(`Unable to seed Dashboard Activities: ${dashboardActivityResult.error.message}`);
   }
 }
 

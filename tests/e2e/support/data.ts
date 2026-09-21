@@ -9,6 +9,11 @@ export const E2E_FIXTURES = {
     slug: "organization-b-e2e",
     id: "10000000-0000-4000-8000-000000000002",
   },
+  dashboardOrganization: {
+    name: "FASBtech E2E Dashboard",
+    slug: "fasbtech-e2e-dashboard",
+    id: "10000000-0000-4000-8000-000000000003",
+  },
   owner: {
     email: "owner-clientes-acessos-e2e@example.test",
     password: "E2E-Clientes-Acessos-2026!",
@@ -38,6 +43,37 @@ export const E2E_FIXTURES = {
     password: "E2E-Demandas-2026!",
     fullName: "Owner B E2E Demandas",
     membershipId: "20000000-0000-4000-8000-000000000005",
+  },
+  dashboardOwner: {
+    email: "owner-dashboard-e2e@example.test",
+    password: "E2E-Dashboard-2026!",
+    fullName: "Owner E2E Dashboard",
+    membershipId: "20000000-0000-4000-8000-000000000006",
+  },
+  dashboardMember: {
+    email: "member-dashboard-e2e@example.test",
+    password: "E2E-Dashboard-2026!",
+    fullName: "Member E2E Dashboard",
+    membershipId: "20000000-0000-4000-8000-000000000007",
+  },
+  dashboardAdmin: {
+    email: "admin-dashboard-e2e@example.test",
+    password: "E2E-Dashboard-2026!",
+    fullName: "Admin E2E Dashboard",
+    membershipId: "20000000-0000-4000-8000-000000000008",
+  },
+  dashboard: {
+    assignedClientId: "30000000-0000-4000-8000-000000000011",
+    restrictedClientId: "30000000-0000-4000-8000-000000000012",
+    assignedOverdueDemandId: "40000000-0000-4000-8000-000000000011",
+    assignedCompletedDemandId: "40000000-0000-4000-8000-000000000012",
+    restrictedDemandId: "40000000-0000-4000-8000-000000000013",
+    templateId: "60000000-0000-4000-8000-000000000011",
+    draftContractId: "61000000-0000-4000-8000-000000000011",
+    generatedContractId: "61000000-0000-4000-8000-000000000012",
+    sentContractId: "61000000-0000-4000-8000-000000000013",
+    signedContractId: "61000000-0000-4000-8000-000000000014",
+    canceledContractId: "61000000-0000-4000-8000-000000000015",
   },
   clients: {
     clientA: {

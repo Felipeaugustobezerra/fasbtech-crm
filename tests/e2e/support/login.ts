@@ -13,6 +13,6 @@ export async function loginAs(page: Page, credentials: LoginCredentials) {
 
   await page.waitForURL((url) => url.pathname === "/");
   await expect(
-    page.getByRole("heading", { name: "Bem-vindo ao FASBtech CRM" }),
+    page.getByRole("main").getByRole("heading", { level: 1 }),
   ).toBeVisible();
 }
