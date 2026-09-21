@@ -946,9 +946,9 @@ Activity Logs correspondentes
 
 # Sprint 06 — Dashboard consolidado
 
-Status: Planejada e tecnicamente não iniciada
+Status: Concluída
 
-Responsável por consolidar indicadores reais e autorizados de Clientes, Demandas, Financeiro, Contratos e Activity Logs, sem persistir agregados duplicados.
+Consolidou indicadores reais e autorizados de Clientes, Demandas, Financeiro, Contratos e Activity Logs, sem persistir agregados duplicados.
 
 ---
 
@@ -980,11 +980,14 @@ Sprint 05 — Contratos
 Sprint 06 — Dashboard
 ```
 
-Próxima Sprint:
+Estado atual do Roadmap funcional:
 
 ```text
 Sprint 06 — Dashboard consolidado
-Status: Planejada e tecnicamente não iniciada
+Status: Concluída
+
+Todas as Sprints funcionais aprovadas do MVP v3.0 estão concluídas.
+Não existe Sprint posterior aprovada neste Roadmap.
 ```
 
 Documentos específicos das Sprints futuras somente deverão ser criados quando o processo oficial exigir.

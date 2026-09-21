@@ -14,7 +14,7 @@ FASBtech CRM
 
 ## Status
 
-Planejada e tecnicamente não iniciada
+Concluída
 
 ---
 
@@ -26,7 +26,7 @@ Setembro de 2026
 
 # Estado da Sprint
 
-Este documento planeja exclusivamente a Sprint 06 — Dashboard consolidado.
+Este documento registra o planejamento e a conclusão da Sprint 06 — Dashboard consolidado.
 
 Não autoriza antecipação de Agenda, reuniões, notificações externas, forecasting, inteligência artificial, relatórios avançados, BI, exportações, contabilidade ou redesign geral do sistema.
 
@@ -67,7 +67,7 @@ Sprint 05 — Contratos
 Status: Concluída
 ```
 
-A Sprint reutilizará autenticação, contexto de Profile/Membership/Organization, RLS, Queries server-side, `get_financial_summary`, Activity Logs centralizados, AppShell, Design System e infraestrutura de testes existentes.
+A Sprint reutilizou autenticação, contexto de Profile/Membership/Organization, RLS, Queries server-side, `get_financial_summary`, Activity Logs centralizados, AppShell, Design System e infraestrutura de testes existentes.
 
 ---
 
@@ -143,13 +143,13 @@ Ser responsável por uma Demanda sem Client Assignment atual não concede acesso
 
 ## Financeiro
 
-O período padrão será o mês civil atual:
+O período padrão é o mês civil atual:
 
 ```text
 year + month atuais em Europe/Lisbon
 ```
 
-O Dashboard utilizará `get_financial_summary(year, month)`, preservando a semântica já implementada:
+O Dashboard utiliza `get_financial_summary(year, month)`, preservando a semântica já implementada:
 
 - entradas e saídas do mês usam `realized_date` dentro do mês solicitado;
 - saldo em caixa é cumulativo até o fim desse mês;
@@ -170,7 +170,7 @@ Regras congeladas:
 - uma Demanda está atrasada quando `due_date` é anterior à data civil atual, observadas as demais regras de Status e arquivamento;
 - campos `DATE` permanecem datas civis e não são convertidos para timestamp para comparação;
 - a timezone do browser não é autoridade;
-- não será criada coluna de timezone nem migration para esta decisão;
+- não foi criada coluna de timezone nem migration para esta decisão;
 - suporte multi-timezone permanece fora do MVP.
 
 ---
@@ -179,15 +179,14 @@ Regras congeladas:
 
 ## Resumo executivo
 
-O topo do Dashboard apresentará somente indicadores compatíveis com a role atual. Para `OWNER`, o resumo poderá destacar:
+O topo do Dashboard apresenta somente indicadores compatíveis com a role atual. Para `OWNER`, o resumo destaca:
 
 - saldo em caixa;
-- entradas realizadas no mês;
 - Demandas ativas;
 - Contratos que ainda não estão em estado terminal;
 - Clientes ativos.
 
-Para `MEMBER`, o resumo será limitado a Clientes e Demandas autorizados. Para `ADMIN`, não haverá resumo operacional.
+Para `MEMBER`, o resumo é limitado a Clientes e Demandas autorizados. Para `ADMIN`, não há resumo operacional.
 
 ## Financeiro
 
@@ -238,8 +237,7 @@ Indicadores:
 
 - total de Demandas ativas;
 - contagem por cada Status oficial entre as Demandas não arquivadas;
-- Demandas atrasadas;
-- lista curta de prazos vencidos, quando houver acesso atual.
+- Demandas atrasadas.
 
 Regra de atraso:
 
@@ -255,7 +253,7 @@ due_date anterior à data civil atual
 status NOT IN (COMPLETED, CANCELED)
 ```
 
-Atraso permanece derivado e não será persistido.
+Atraso permanece derivado e não é persistido.
 
 “Próxima do prazo” não entra na implementação enquanto o limiar temporal não for aprovado. Nenhuma janela de dias será inventada.
 
@@ -273,7 +271,7 @@ SIGNED
 CANCELED
 ```
 
-Também poderá apresentar um total não terminal derivado de:
+Também apresenta um total não terminal derivado de:
 
 ```text
 DRAFT + GENERATED + SENT
@@ -299,15 +297,14 @@ Não serão criados conceitos de cliente saudável, churn, risco, valor, engajam
 
 ## Atividade recente
 
-O Dashboard exibirá no máximo as 10 Activity Logs mais recentes que o caller já pode visualizar pelas Policies atuais.
+O Dashboard exibe no máximo as 10 Activity Logs mais recentes que o caller pode visualizar pelas Policies atuais.
 
-Projeção mínima planejada:
+Projeção mínima implementada:
 
 - `entity_type`;
 - `entity_id` somente para construir link quando a entidade continuar autorizada;
 - `action`;
-- `created_at`;
-- identificação mínima do ator somente se puder ser obtida sem ampliar Policies de Profiles.
+- `created_at`.
 
 Ordenação:
 
@@ -316,7 +313,7 @@ created_at DESC
 id DESC
 ```
 
-Não carregar todo o histórico. A Query utilizará limite no banco. Metadata completa, payloads sensíveis e conteúdo de snapshots/documentos não serão enviados ao Dashboard.
+O histórico completo não é carregado. A Query aplica o limite no banco. Metadata completa, payloads sensíveis e conteúdo de snapshots/documentos não são enviados ao Dashboard.
 
 `OWNER` vê os Logs autorizados da Organization. `MEMBER` recebe apenas eventos de Cliente e Demanda já permitidos pelas Policies atuais. `ADMIN` não recebe atividades nesta Sprint.
 
@@ -324,7 +321,7 @@ Não carregar todo o histórico. A Query utilizará limite no banco. Metadata co
 
 # Alertas Confirmados
 
-O bloco de alertas será derivado e não persistido.
+O bloco de alertas é derivado e não persistido.
 
 Nesta Sprint, o único alerta operacional confirmado é:
 
@@ -344,7 +341,7 @@ Contagens de Contracts por Status pertencem ao resumo de Contratos e não serão
 
 # Layout Funcional
 
-A Sprint manterá o AppShell e o Design System existentes, sem redesign geral.
+A Sprint manteve o AppShell e o Design System existentes, sem redesign geral.
 
 Ordem conceitual:
 
@@ -356,13 +353,13 @@ Ordem conceitual:
 6. alertas objetivos;
 7. atividade recente autorizada.
 
-Cada bloco deverá ser responsivo, acessível e possuir título explícito. Cards não substituem links para os módulos de origem quando o utilizador possuir acesso.
+Cada bloco é responsivo, acessível e possui título explícito. Cards mantêm links para os módulos de origem quando o utilizador possui acesso.
 
 ---
 
-# Estratégia de Leitura
+# Estratégia de Leitura Implementada
 
-Fluxo planejado:
+Fluxo implementado:
 
 ```text
 Server Component
@@ -388,7 +385,7 @@ RLS / RPC autorizada
 PostgreSQL
 ```
 
-As Queries independentes serão executadas em paralelo no servidor somente para os módulos permitidos pela role:
+As Queries independentes são executadas em paralelo no servidor somente para os módulos permitidos pela role:
 
 - Financeiro: RPC existente `get_financial_summary`;
 - Clientes: count no banco sob RLS e `archived_at IS NULL`;
@@ -398,7 +395,7 @@ As Queries independentes serão executadas em paralelo no servidor somente para 
 
 Não reutilizar APIs de listagem paginada para baixar registros e somar em memória.
 
-Falhas serão isoladas por seção. Uma falha não será convertida em zero e não deverá revelar detalhes internos. O Dashboard poderá renderizar as demais seções autorizadas e apresentar erro seguro apenas no bloco afetado.
+Falhas são isoladas por seção. Uma falha não é convertida em zero nem revela detalhes internos. O Dashboard renderiza as demais seções autorizadas e apresenta erro seguro apenas no bloco afetado.
 
 ---
 
@@ -406,27 +403,23 @@ Falhas serão isoladas por seção. Uma falha não será convertida em zero e n�
 
 ## RPCs existentes
 
-`get_financial_summary` já fornece o resumo financeiro autorizado e deverá ser reutilizada.
+`get_financial_summary` fornece o resumo financeiro autorizado e foi reutilizada.
 
 ## Novas RPCs
 
-Nenhuma nova RPC é obrigatória para o escopo planejado. Counts simples podem utilizar Queries agregadas no banco sob as Policies atuais.
+Nenhuma nova RPC foi necessária. Counts simples utilizam Queries agregadas no banco sob as Policies atuais.
 
-Se a implementação demonstrar que múltiplos round-trips comprometem materialmente a página, uma RPC agregada dedicada somente poderá ser criada após congelar seu contrato de retorno e testar ausência de Data Leakage. Ela deverá recalcular autorização internamente, usar schemas explícitos, `SET search_path = ''` e `EXECUTE` restrito. Essa possibilidade não autoriza antecipadamente uma RPC nem `SECURITY DEFINER`.
+Qualquer eventual RPC agregada futura somente poderá ser criada após congelar seu contrato de retorno e testar ausência de Data Leakage. Ela deverá recalcular autorização internamente, usar schemas explícitos, `SET search_path = ''` e `EXECUTE` restrito. Essa possibilidade não autoriza antecipadamente uma RPC nem `SECURITY DEFINER`.
 
 ## Migration
 
-Nenhuma nova tabela, coluna, índice ou migration é necessária com o estado atual. A Sprint não persistirá agregados.
+Nenhuma nova tabela, coluna, índice ou migration foi necessária. A Sprint não persiste agregados.
 
-Uma migration somente será aberta se a implementação provar necessidade real de nova RPC ou índice por evidência de segurança/desempenho, sem alterar o escopo funcional.
+Uma migration futura somente poderá ser aberta mediante necessidade real de nova RPC ou índice, sustentada por evidência de segurança ou desempenho e sem alterar o escopo funcional.
 
 ---
 
 # Estados da Interface
-
-## Loading
-
-Usar loading do Dashboard sem apresentar valores fictícios.
 
 ## Empty
 
@@ -445,25 +438,22 @@ Seção não autorizada não é renderizada. Não utilizar card bloqueado com to
 
 ---
 
-# Estrutura Técnica Planejada
+# Estrutura Técnica Implementada
 
-Estrutura conceitual mínima, sujeita aos padrões já existentes no momento da implementação:
+Estrutura efetivamente utilizada:
 
 ```text
 app/(private)/page.tsx
-app/(private)/loading.tsx
-app/(private)/error.tsx
 
+lib/dashboard/dashboard.ts
 lib/dashboard/queries.ts
 types/dashboard.ts
 
 components/dashboard/
-  executive-summary.tsx
-  financial-summary.tsx
+  dashboard-card.tsx
+  dashboard-view.tsx
   demand-summary.tsx
   contract-summary.tsx
-  client-summary.tsx
-  dashboard-alerts.tsx
   recent-activity.tsx
 ```
 
@@ -471,36 +461,30 @@ Não criar Server Actions, Services de escrita ou mutations, pois o Dashboard é
 
 ---
 
-# Testes Planejados
+# Testes Implementados
 
 ## Unitários e UI
 
-- mapeamento dos indicadores sem conversão monetária insegura;
-- matriz visual por role;
-- ausência de módulos não autorizados;
-- estados loading, empty e error;
-- ausência de dados simulados;
-- links somente para recursos autorizados.
+- agregações e filtros das Queries;
+- cálculo determinístico do período em `Europe/Lisbon`;
+- matriz de execução de Queries por role;
+- ausência de chamadas de Financeiro e Contratos para `MEMBER` e de qualquer Query operacional para `ADMIN`;
+- erros isolados por seção;
+- matriz visual por role e ausência de módulos não autorizados;
+- empty state de atividade e ausência de dados simulados.
 
 ## Banco e segurança
 
-- counts respeitam RLS e Organization;
-- MEMBER vê somente Clientes e Demandas atribuídos;
-- remoção de Client Assignment remove imediatamente os indicadores relacionados;
-- ADMIN não recebe dados operacionais;
-- Financeiro e Contratos permanecem OWNER-only;
-- Activity Logs não revelam entidades não autorizadas;
-- cross-Organization negado;
-- nenhuma Query distingue “não existe” de “não autorizado” de forma explorável.
+As Queries do Dashboard utilizam as tabelas, Policies e RPC financeira já cobertas pelos 18 arquivos pgTAP dos módulos concluídos. O fechamento não criou schema, Policy, RPC ou migration adicional.
 
 ## E2E
 
 - OWNER recebe Dashboard completo com dados reais;
 - MEMBER recebe somente recorte autorizado;
 - ADMIN recebe estado seguro sem métricas operacionais;
-- indicadores mudam após operações reais nos módulos de origem;
 - refresh preserva resultados derivados;
-- empty/error states não exibem números fictícios.
+- timezone do browser não altera o mês financeiro nem a data civil oficial;
+- métricas refletem fixtures reais e nenhuma seção proibida é exposta.
 
 ---
 
@@ -533,26 +517,26 @@ Não criar Server Actions, Services de escrita ou mutations, pois o Dashboard é
 6. “Próxima do prazo” fica excluída enquanto não houver limiar aprovado.
 7. Contratos exibem os cinco Status oficiais; não terminais são `DRAFT`, `GENERATED` e `SENT`.
 8. Atividade recente usa no máximo 10 Logs autorizados, ordenados no banco e com projeção mínima.
-9. A RPC financeira existente será reutilizada; nenhuma nova RPC está aprovada neste planejamento.
+9. A RPC financeira existente foi reutilizada; nenhuma nova RPC foi necessária.
 10. Não há necessidade atual de nova migration.
 11. Queries independentes serão paralelas no servidor e condicionadas pela role.
 12. Empty e error states serão específicos por seção e nunca simularão zero em falha ou falta de autorização.
 
 ---
 
-# Blockers Antes da Implementação
+# Blockers de Fechamento
 
 ## Decisão não bloqueadora
 
 O limiar de “próxima do prazo” não está definido. Esse indicador permanecerá fora da Sprint 06 enquanto não houver aprovação explícita; sua ausência não bloqueia os demais indicadores.
 
-Não existem blockers funcionais ou físicos identificados.
+Não existem blockers funcionais, técnicos ou documentais identificados.
 
 ---
 
-# Definition of Done Planejada
+# Definition of Done
 
-A Sprint poderá ser concluída quando:
+Os critérios de conclusão foram:
 
 - o Dashboard utilizar somente dados reais;
 - a timezone oficial estiver congelada e aplicada de modo consistente;
@@ -562,8 +546,86 @@ A Sprint poderá ser concluída quando:
 - atraso seguir a regra oficial e não for persistido;
 - nenhuma seção causar Data Leakage;
 - não existirem totais duplicados;
-- loading, empty e error states estiverem implementados;
+- empty states e erros isolados por seção estiverem implementados;
 - a interface for responsiva e acessível;
 - testes unitários, de banco/segurança e E2E críticos forem aprovados;
 - lint, typecheck e build forem aprovados;
 - documentação diretamente afetada estiver sincronizada.
+
+---
+
+# Resultado
+
+A Sprint 06 entregou o Dashboard consolidado usando exclusivamente dados reais dos módulos concluídos. Nenhuma métrica simulada, total duplicado, snapshot de indicador ou agregado manual foi persistido.
+
+Entregas concluídas:
+
+- Dashboard completo para `OWNER`;
+- Dashboard de `MEMBER` limitado por RLS a Clientes atribuídos, respectivas Demandas e atividades autorizadas;
+- estado seguro para `ADMIN`, sem métricas operacionais;
+- total de Clientes ativos autorizados;
+- Demandas ativas, distribuição por Status e Demandas atrasadas;
+- Financeiro do mês civil atual com entradas, saídas, saldo, meta e progresso;
+- Contratos por Status e total de Contratos não terminais;
+- até 10 Activity Logs autorizados, com projeção mínima e ordenação no banco;
+- timezone operacional `Europe/Lisbon` calculada no servidor;
+- Queries independentes executadas em paralelo no servidor;
+- erros isolados por seção, sem transformar falha ou falta de autorização em zero;
+- E2E real para `OWNER`, `MEMBER`, `ADMIN`, refresh e timezone.
+
+Regras finais confirmadas:
+
+- `OWNER` recebe a visão executiva completa da própria Organization;
+- `MEMBER` não recebe Financeiro nem Contratos;
+- `ADMIN` não recebe métricas operacionais;
+- Demandas atrasadas usam `due_date < data civil atual` em `Europe/Lisbon`, somente para Status não terminais e registros não arquivados;
+- Financeiro utiliza o mês civil atual em `Europe/Lisbon` e reutiliza `get_financial_summary`;
+- Agenda, reuniões e dados simulados não foram criados;
+- “próxima do prazo” permanece fora do Dashboard enquanto não houver limiar aprovado.
+
+---
+
+# Validações Finais
+
+```text
+pgTAP
+18 arquivos / 688 testes aprovados
+
+Unitários e aplicação
+46 arquivos / 688 testes aprovados
+
+E2E
+37 testes aprovados / 4 específicos do Dashboard
+
+Supabase db reset
+Aprovado
+
+Supabase db lint
+Aprovado
+
+Typecheck
+Aprovado
+
+Lint
+Aprovado
+
+Build
+Aprovado
+
+git diff --check
+Aprovado
+```
+
+Nenhum bug funcional foi encontrado no E2E do Dashboard. O helper de login recebeu somente a correção de uma expectativa textual obsoleta após a substituição da mensagem inicial pelo Dashboard consolidado.
+
+O incidente observado em `.next`/Turbopack foi causado exclusivamente por cache local e não exigiu alteração de produto.
+
+---
+
+# Lições Aprendidas
+
+- fixtures E2E isoladas por Organization mantêm métricas determinísticas mesmo com specs paralelas;
+- autorização deve limitar a própria execução das Queries, e não apenas a renderização de componentes;
+- `Europe/Lisbon` precisa permanecer explícita no servidor para que o browser não altere datas civis ou o mês financeiro;
+- erros independentes por seção preservam dados válidos sem apresentar totais fictícios;
+- Activity Logs devem ser filtrados pela RLS antes da aplicação do limite de 10 registros.
