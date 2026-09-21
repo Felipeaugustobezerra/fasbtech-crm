@@ -182,6 +182,26 @@ Dashboard consolidado na Sprint 06.
 
 ---
 
+# Fase Atual
+
+```text
+Release Readiness do MVP v3.0
+Status: NEEDS WORK
+Produção: NO-GO até resolução do checklist obrigatório
+```
+
+A fase de Release Readiness prepara ambiente, segurança operacional, qualidade,
+deploy e recuperação sem adicionar novas funcionalidades ou criar uma Sprint
+funcional não aprovada.
+
+Fonte:
+
+```text
+docs/09-release/Release-Readiness.md
+```
+
+---
+
 # Stack Oficial
 
 - Next.js

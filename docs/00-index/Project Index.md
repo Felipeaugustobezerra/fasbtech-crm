@@ -996,6 +996,25 @@ Não criar arquivos vazios apenas para representar o Roadmap.
 
 ---
 
+# Release Readiness
+
+Após a conclusão das Sprints 01–06, a fase ativa é exclusivamente operacional:
+
+- [[docs/09-release/Release-Readiness]]
+
+Status atual:
+
+```text
+NEEDS WORK
+
+Núcleo funcional concluído.
+Produção ainda em preparação e classificada como NO-GO.
+```
+
+Essa fase não representa nova Sprint funcional e não autoriza novas features.
+
+---
+
 # 9. Ordem Obrigatória para Implementação
 
 Antes de implementar uma funcionalidade relevante:
@@ -1325,6 +1344,7 @@ Este documento deverá permanecer sincronizado com:
 - Demands v3.0.
 - Financial v3.0.
 - Contracts v3.0.
+- Release Readiness do MVP v3.0.
 
 ---
 
