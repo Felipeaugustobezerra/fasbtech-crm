@@ -86,6 +86,24 @@ Preencher as variáveis obrigatórias atualmente utilizadas pelo projeto:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+RESEND_API_KEY=
+CONTRACTS_EMAIL_FROM=
+```
+
+As variáveis `NEXT_PUBLIC_*` contêm somente a URL e a publishable key que o
+browser precisa conhecer. `RESEND_API_KEY` e `CONTRACTS_EMAIL_FROM` são
+server-only e deverão ser configuradas apenas no ambiente local ignorado pelo
+Git ou no cofre do provedor.
+
+Local, staging e produção deverão utilizar configurações próprias. Staging e
+produção não podem compartilhar projeto Supabase, dados, Storage ou secrets.
+Nunca utilizar prefixo `NEXT_PUBLIC_` para service role, secret key, senha ou
+token server-only.
+
+O checklist operacional completo está em:
+
+```text
+docs/09-release/Production-Baseline.md
 ```
 
 Nunca versionar arquivos locais de ambiente como:

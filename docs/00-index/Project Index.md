@@ -1001,6 +1001,8 @@ Não criar arquivos vazios apenas para representar o Roadmap.
 Após a conclusão das Sprints 01–06, a fase ativa é exclusivamente operacional:
 
 - [[docs/09-release/Release-Readiness]]
+- [[docs/09-release/Production-Baseline]]
+- [[docs/09-release/Backup-Recovery-Runbook]]
 
 Status atual:
 

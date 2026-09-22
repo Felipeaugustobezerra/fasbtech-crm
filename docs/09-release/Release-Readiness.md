@@ -62,12 +62,12 @@ D — opcional / pós-MVP
 |---|---|---|---|
 | Núcleo funcional | `READY` | A | Sprints 01–06 concluídas, com banco, aplicação e E2E aprovados. |
 | Segurança da aplicação e banco | `READY` | A | Auth, RLS, Grants, RPCs e Storage privado possuem contratos e testes locais. |
-| Verificação final de segurança para produção | `NEEDS WORK` | C | Falta revisão final do ambiente efetivamente implantado, headers e secrets. |
+| Verificação final de segurança para produção | `NEEDS WORK` | C | Baseline local de headers, cookies, env e secrets concluído; falta validar o ambiente efetivamente implantado. |
 | UX/UI de release | `NEEDS WORK` | C | Fluxos funcionam, mas falta passagem final sistemática de consistência, responsividade e feedback. |
 | Acessibilidade | `NEEDS WORK` | C | Regras estão documentadas e há semântica básica, mas falta auditoria final WCAG 2.2 AA. |
 | Ambiente de produção | `NOT CONFIGURED` | B | Nenhum ambiente Supabase/Vercel de produção foi comprovado nesta documentação. |
 | Resend real | `NOT CONFIGURED` | B | Variáveis estão documentadas, mas domínio/remetente e envio real não foram validados. |
-| Backup e recuperação | `NOT CONFIGURED` | B/C | Não há política, retenção, restore testado ou runbook operacional registrado. |
+| Backup e recuperação | `NOT CONFIGURED` | B/C | Runbook e objetivos propostos existem; backup, retenção aprovada e restore testado ainda não estão configurados. |
 | Observabilidade mínima | `NOT CONFIGURED` | C | Não há serviço/processo de monitorização e alertas mínimos comprovado. |
 | CI/CD | `NOT CONFIGURED` | C | Scripts existem, mas não há pipeline versionado encontrado. |
 | Deploy de produção | `NOT CONFIGURED` | B/C | Domínio, HTTPS, variáveis, migrations e smoke pós-deploy ainda precisam ser executados. |
@@ -98,7 +98,7 @@ mas o ambiente e os controles operacionais de produção ainda não estão confi
 | Dashboard consolidado | `READY` | Dados reais, matriz por role, timezone e 4 E2E específicos aprovados. |
 | Ausência de dados fake | `READY` | Dashboard e módulos utilizam fontes reais; Agenda e reuniões fictícias permanecem ausentes. |
 | Totais duplicados | `READY` | Dashboard deriva os indicadores no banco e não persiste agregados próprios. |
-| Suíte local atual | `READY` | pgTAP: 18/688; unit/app: 46/688; E2E: 37, todos aprovados no fechamento da Sprint 06. |
+| Suíte local atual | `READY` | pgTAP: 18/688 e E2E: 37 aprovados no fechamento da Sprint 06; unit/app atualizado nesta fase para 48 arquivos/693 testes aprovados. |
 
 Smoke funcional obrigatório antes do `GO`:
 
@@ -126,6 +126,10 @@ Smoke funcional obrigatório antes do `GO`:
 | Download privado | `READY` | Download server-side autorizado e ausência de `object_path` na UI validados. |
 | Activity Logs | `READY` | Infraestrutura central, imutabilidade e escrita transacional cobertas. |
 | Isolamento cross-Organization | `READY` | Cenários negados cobertos por banco e E2E. |
+| Security headers locais | `READY` | CSP, proteção de framing, nosniff, referrer, Permissions Policy e HSTS de produção estão configurados e testados. |
+| Cookies Auth explícitos | `READY` | `Path=/`, `SameSite=Lax`, `Secure` em produção e compatibilidade SSR foram formalizados e testados. |
+| Contrato de environment | `READY` | Variáveis públicas/server-only e separação local/staging/produção estão documentadas sem valores reais. |
+| Secrets scan local | `READY` | Nenhum padrão de chave, token ou private key real foi identificado nos arquivos versionados ou histórico pesquisado. |
 
 ## Artefatos de execução existentes
 
@@ -135,6 +139,8 @@ Smoke funcional obrigatório antes do `GO`:
 | Scripts de validação | `READY` | `lint`, `typecheck`, `test`, `test:coverage`, `test:e2e` e `build` existem no `package.json`. |
 | `.env.example` sem valores reais | `READY` | Contém apenas os nomes das variáveis públicas e server-only necessárias. |
 | Build de produção local | `READY` | `next build` aprovado no fechamento técnico. |
+| Production baseline | `READY` | Checklist reproduzível de staging/produção, migrations, Auth, RLS/Grants, Storage, OWNER e pós-migration documentado. |
+| Recovery runbook | `READY` | Procedimentos de backup, restore, validação, incidentes e responsabilidades documentados. |
 
 ---
 
@@ -153,6 +159,8 @@ Smoke funcional obrigatório antes do `GO`:
 | Secrets do ambiente | `NOT CONFIGURED` | Configurar apenas no cofre do provedor, restringir acesso e documentar rotação. |
 | URL/domínio da aplicação | `NOT CONFIGURED` | Configurar domínio oficial e DNS. |
 | HTTPS | `NOT CONFIGURED` | Confirmar certificado válido, redirecionamento para HTTPS e ausência de mixed content. |
+
+O procedimento detalhado e a matriz de environment estão em `docs/09-release/Production-Baseline.md`. A existência do checklist é `READY`; todos os itens remotos acima permanecem `NOT CONFIGURED` até execução comprovada.
 
 Não executar `db reset`, fixtures E2E ou qualquer script destrutivo contra produção.
 
@@ -212,9 +220,9 @@ Critério de saída: nenhuma falha WCAG 2.2 AA de severidade alta nos fluxos cr�
 |---|---|---|
 | Revisão do schema remoto | `NEEDS WORK` | Confirmar RLS habilitada, Policies, Grants, funções e Storage após migrations. |
 | RPC inventory | `NEEDS WORK` | Conferir `SECURITY DEFINER`, `search_path`, schemas explícitos e EXECUTE no banco implantado. |
-| Secrets scan | `NEEDS WORK` | Verificar histórico e artefatos de build; nenhuma chave real pode estar versionada ou no bundle. |
-| Cookies de produção | `NEEDS WORK` | Validar flags efetivas, HTTPS, expiração e comportamento SSR no domínio final. |
-| Security headers | `NEEDS WORK` | Definir e validar CSP compatível, HSTS, `X-Content-Type-Options`, política de referrer e framing. |
+| Secrets scan | `READY` | Arquivos versionados e histórico foram pesquisados sem identificar secret real; o build local deve continuar sem valores server-only e a verificação deve ser repetida no candidato. |
+| Cookies de produção | `NEEDS WORK` | Configuração local explícita e testada (`SameSite=Lax`, `Secure` em produção, `HttpOnly=false` por compatibilidade SSR); falta validar flags efetivas, expiração e refresh no domínio HTTPS final. |
+| Security headers | `READY` | CSP compatível com Next.js/Supabase, HSTS somente em produção, nosniff, referrer, framing e Permissions Policy implementados e testados; repetir verificação do header efetivo após deploy. |
 | Downloads | `NEEDS WORK` | Repetir autorização OWNER e negação MEMBER/ADMIN/cross-Organization no ambiente candidato. |
 | Rate/abuse review | `NEEDS WORK` | Avaliar limites mínimos para Login, envio de e-mail e uploads sem criar infraestrutura desproporcional. |
 
@@ -222,13 +230,15 @@ Critério de saída: nenhuma falha WCAG 2.2 AA de severidade alta nos fluxos cr�
 
 | Item | Estado | Trabalho necessário |
 |---|---|---|
-| Backup | `NOT CONFIGURED` | Ativar estratégia compatível com o plano Supabase e definir responsável. |
-| Retenção | `NOT CONFIGURED` | Definir duração, cobertura de banco e Storage e requisitos legais/operacionais aplicáveis. |
-| Restore | `NOT CONFIGURED` | Documentar e executar restore controlado em ambiente isolado antes do `GO`. |
-| RPO/RTO | `NEEDS WORK` | Aprovar objetivos simples e realistas para o MVP. |
+| Backup | `NOT CONFIGURED` | Runbook existe; ativar estratégia compatível com o plano Supabase e atribuir responsável. |
+| Retenção | `NOT CONFIGURED` | Proposta de 30 dias registrada; confirmar cobertura de banco e Storage, custo e requisitos aplicáveis. |
+| Restore | `NOT CONFIGURED` | Procedimento e validação estão documentados; executar restore controlado em ambiente isolado antes do `GO`. |
+| RPO/RTO | `NEEDS WORK` | Propostas de RPO de 24 horas e RTO de 8 horas úteis registradas; responsáveis precisam aprovar e o restore precisa comprovar o RTO. |
 | Activity Logs | `READY` | Persistência central e imutável implementada; definir consulta operacional em incidente sem criar feature. |
-| Recuperação operacional | `NEEDS WORK` | Criar runbook conciso para indisponibilidade, credencial comprometida, restore e rollback. |
+| Recuperação operacional | `READY` | Runbook cobre indisponibilidade, migration com falha, credencial comprometida, restore, documentos e responsabilidades. |
 | Dados iniciais | `NEEDS WORK` | Definir quem cria OWNER, Clientes iniciais e configurações sem copiar fixtures locais. |
+
+O runbook oficial está em `docs/09-release/Backup-Recovery-Runbook.md`. `READY` para o documento não significa capacidade remota pronta: backup ativo, retenção aprovada e restore comprovado continuam blockers.
 
 ## Observability
 
@@ -380,7 +390,8 @@ smoke pós-deploy
 - [ ] Policies, Grants e RPCs do banco implantado foram revisados.
 - [ ] Nenhuma chave `service_role` ou secret está no bundle ou repositório.
 - [ ] Storage e downloads privados negam utilizadores não autorizados.
-- [ ] Cookies e headers de produção foram verificados.
+- [x] Headers e configuração de cookies possuem baseline local implementado e testado.
+- [ ] Cookies e headers efetivos do domínio de produção foram verificados.
 
 ## UX/UI e acessibilidade
 
@@ -402,7 +413,7 @@ smoke pós-deploy
 - [ ] Backup está ativo e possui responsável.
 - [ ] Retenção e RPO/RTO estão aprovados.
 - [ ] Restore foi testado em ambiente isolado.
-- [ ] Runbook de incidente e recuperação está acessível.
+- [x] Runbook de incidente e recuperação está acessível.
 
 ## Observability e CI/CD
 
@@ -437,10 +448,10 @@ NO-GO
 1. ambiente Supabase e aplicação de produção não configurados nem comprovados;
 2. migrations, Auth URLs, bucket privado e OWNER inicial ainda não validados em ambiente candidato;
 3. `RESEND_API_KEY`, `CONTRACTS_EMAIL_FROM`, domínio e envio real controlado não configurados;
-4. backup, retenção, RPO/RTO e restore não definidos/testados;
+4. backup remoto não ativado, retenção e RPO/RTO ainda não aprovados e restore ainda não testado;
 5. observabilidade e alertas mínimos não configurados;
 6. pipeline CI/CD, estratégia de migration e rollback não versionados/ensaiados;
-7. revisão final de segurança do ambiente, headers e cookies pendente;
+7. validação efetiva de schema remoto, cookies e headers no domínio HTTPS pendente;
 8. smoke completo, refinamento UX/UI e auditoria de acessibilidade pendentes;
 9. domínio, HTTPS e smoke pós-deploy pendentes.
 
@@ -461,4 +472,3 @@ A fase estará concluída quando:
 - smoke de produção estiver aprovado;
 - não houver vulnerabilidade crítica ou alta conhecida sem mitigação;
 - a decisão `GO` estiver registrada por responsável autorizado.
-
