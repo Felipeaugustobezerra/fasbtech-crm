@@ -82,7 +82,10 @@ export async function generateContractDocument(
   try {
     pdf = await generateContractPdf(input.snapshot);
   } catch (cause) {
-    workflowError("UNEXPECTED_ERROR", cause);
+    workflowError(
+      "UNEXPECTED_ERROR",
+      new Error("CONTRACT_PDF_GENERATION_FAILED", { cause }),
+    );
   }
 
   const documentId = randomUUID();

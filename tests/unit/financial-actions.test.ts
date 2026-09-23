@@ -236,4 +236,21 @@ describe("financial actions", () => {
       });
     },
   );
+
+  it("records an RPC failure without financial content", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    mocks.createFinancialEntry.mockRejectedValueOnce(new Error("DATABASE_ERROR"));
+
+    await createFinancialEntryAction(entryInput);
+
+    const logged = spy.mock.calls[0]?.[0] as string;
+    expect(JSON.parse(logged)).toMatchObject({
+      module: "financial",
+      operation: "create_entry",
+      code: "DATABASE_ERROR",
+    });
+    expect(logged).not.toContain("Projeto Website");
+    expect(logged).not.toContain("1250.50");
+    spy.mockRestore();
+  });
 });

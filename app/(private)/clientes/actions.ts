@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { logServerEvent } from "@/lib/observability/server-logger";
 import {
   clientIdSchema,
   clientSchema,
@@ -79,6 +80,12 @@ export async function createClientAction(
 
     return { success: true, clientId };
   } catch {
+    logServerEvent({
+      level: "error",
+      module: "clients",
+      operation: "create",
+      code: "OPERATION_FAILED",
+    });
     return {
       success: false,
       code: "OPERATION_FAILED",
@@ -114,6 +121,12 @@ export async function updateClientAction(
 
     return { success: true, clientId: updatedClientId };
   } catch {
+    logServerEvent({
+      level: "error",
+      module: "clients",
+      operation: "update",
+      code: "OPERATION_FAILED",
+    });
     return {
       success: false,
       code: "OPERATION_FAILED",
@@ -139,6 +152,12 @@ export async function archiveClientAction(
 
     return { success: true, clientId: archivedClientId };
   } catch {
+    logServerEvent({
+      level: "error",
+      module: "clients",
+      operation: "archive",
+      code: "OPERATION_FAILED",
+    });
     return {
       success: false,
       code: "OPERATION_FAILED",

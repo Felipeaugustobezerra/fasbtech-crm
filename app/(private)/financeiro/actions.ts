@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 
+import { logServerEvent } from "@/lib/observability/server-logger";
 import {
   archiveFinancialEntrySchema,
   changeFinancialEntryStatusSchema,
@@ -89,6 +90,7 @@ function isFinancialActionErrorCode(
 }
 
 async function executeFinancialAction<T>(
+  operationName: string,
   operation: () => Promise<string>,
   toData: (id: string) => T,
 ): Promise<FinancialActionResult<T>> {
@@ -99,6 +101,13 @@ async function executeFinancialAction<T>(
       error instanceof Error && isFinancialActionErrorCode(error.message)
         ? error.message
         : "UNEXPECTED_ERROR";
+
+    logServerEvent({
+      level: "error",
+      module: "financial",
+      operation: operationName,
+      code,
+    });
 
     return {
       success: false,
@@ -117,6 +126,7 @@ export async function createFinancialEntryAction(
   if (!parsed.success) return validationFailure(parsed.error);
 
   return executeFinancialAction(
+    "create_entry",
     () => createFinancialEntry(parsed.data),
     financialEntryData,
   );
@@ -144,6 +154,7 @@ export async function updateFinancialEntryAction(
   if (!parsed.success) return validationFailure(parsed.error);
 
   return executeFinancialAction(
+    "update_entry",
     () => updateFinancialEntry(parsedId.data, parsed.data),
     financialEntryData,
   );
@@ -156,6 +167,7 @@ export async function changeFinancialEntryStatusAction(
   if (!parsed.success) return validationFailure(parsed.error);
 
   return executeFinancialAction(
+    "change_status",
     () => changeFinancialEntryStatus(parsed.data),
     financialEntryData,
   );
@@ -168,6 +180,7 @@ export async function archiveFinancialEntryAction(
   if (!parsed.success) return validationFailure(parsed.error);
 
   return executeFinancialAction(
+    "archive_entry",
     () => archiveFinancialEntry(parsed.data),
     financialEntryData,
   );
@@ -180,6 +193,7 @@ export async function setFinancialGoalAction(
   if (!parsed.success) return validationFailure(parsed.error);
 
   return executeFinancialAction(
+    "set_goal",
     () => setFinancialGoal(parsed.data),
     financialGoalData,
   );

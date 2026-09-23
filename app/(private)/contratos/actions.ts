@@ -3,6 +3,10 @@
 import { z } from "zod";
 
 import {
+  getSafeDiagnosticCode,
+  logServerEvent,
+} from "@/lib/observability/server-logger";
+import {
   activateContractTemplateSchema,
   cancelContractSchema,
   createContractSchema,
@@ -103,6 +107,7 @@ function isContractActionErrorCode(
 }
 
 async function executeContractAction<T>(
+  operationName: string,
   operation: () => Promise<string>,
   toData: (id: string) => T,
 ): Promise<ContractActionResult<T>> {
@@ -113,6 +118,14 @@ async function executeContractAction<T>(
       error instanceof Error && isContractActionErrorCode(error.message)
         ? error.message
         : "UNEXPECTED_ERROR";
+
+    logServerEvent({
+      level: "error",
+      module: "contracts",
+      operation: operationName,
+      code,
+      diagnosticCode: getSafeDiagnosticCode(error),
+    });
 
     return {
       success: false,
@@ -134,6 +147,7 @@ export async function createContractTemplateAction(
   if (!parsed.success) return validationFailure(parsed.error);
 
   return executeContractAction(
+    "create_template",
     () => createContractTemplate(parsed.data),
     contractTemplateData,
   );
@@ -146,6 +160,7 @@ export async function updateContractTemplateAction(
   if (!parsed.success) return validationFailure(parsed.error);
 
   return executeContractAction(
+    "update_template",
     () => updateContractTemplate(parsed.data),
     contractTemplateData,
   );
@@ -158,6 +173,7 @@ export async function activateContractTemplateAction(
   if (!parsed.success) return validationFailure(parsed.error);
 
   return executeContractAction(
+    "activate_template",
     () => activateContractTemplate(parsed.data),
     contractTemplateData,
   );
@@ -170,6 +186,7 @@ export async function deactivateContractTemplateAction(
   if (!parsed.success) return validationFailure(parsed.error);
 
   return executeContractAction(
+    "deactivate_template",
     () => deactivateContractTemplate(parsed.data),
     contractTemplateData,
   );
@@ -182,6 +199,7 @@ export async function createContractAction(
   if (!parsed.success) return validationFailure(parsed.error);
 
   return executeContractAction(
+    "create_contract",
     () => createContract(parsed.data),
     contractData,
   );
@@ -194,6 +212,7 @@ export async function updateDraftContractAction(
   if (!parsed.success) return validationFailure(parsed.error);
 
   return executeContractAction(
+    "update_draft",
     () => updateDraftContract(parsed.data),
     contractData,
   );
@@ -206,6 +225,7 @@ export async function generateContractAction(
   if (!parsed.success) return validationFailure(parsed.error);
 
   return executeContractAction(
+    "generate_pdf",
     () => generateContractDocument(parsed.data),
     contractData,
   );
@@ -218,6 +238,7 @@ export async function markContractSentAction(
   if (!parsed.success) return validationFailure(parsed.error);
 
   return executeContractAction(
+    "send_email",
     () => sendContractDocument(parsed.data),
     contractData,
   );
@@ -230,6 +251,7 @@ export async function markContractSignedAction(
   if (!parsed.success) return validationFailure(parsed.error);
 
   return executeContractAction(
+    "upload_signed_copy",
     () => uploadSignedCopyAndMarkSigned(parsed.data),
     contractData,
   );
@@ -242,6 +264,7 @@ export async function cancelContractAction(
   if (!parsed.success) return validationFailure(parsed.error);
 
   return executeContractAction(
+    "cancel_contract",
     () => cancelContract(parsed.data),
     contractData,
   );

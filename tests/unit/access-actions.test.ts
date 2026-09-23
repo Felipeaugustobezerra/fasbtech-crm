@@ -41,6 +41,28 @@ describe("access actions", () => {
     mocks.updateOrganizationMemberRole.mockReset();
   });
 
+  it("records a failed membership RPC without the member email", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    mocks.addOrganizationMember.mockRejectedValueOnce(
+      new Error("private RPC detail"),
+    );
+
+    await addOrganizationMemberAction({
+      email: "member@example.com",
+      role: "MEMBER",
+    });
+
+    const logged = spy.mock.calls[0]?.[0] as string;
+    expect(JSON.parse(logged)).toMatchObject({
+      module: "access",
+      operation: "add_member",
+      code: "OPERATION_FAILED",
+    });
+    expect(logged).not.toContain("member@example.com");
+    expect(logged).not.toContain("private RPC detail");
+    spy.mockRestore();
+  });
+
   it("validates and normalizes input before adding a member", async () => {
     mocks.addOrganizationMember.mockResolvedValue(membershipId);
 

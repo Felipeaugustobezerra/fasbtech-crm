@@ -58,6 +58,7 @@ const snapshot = {
 
 describe("Contracts actions", () => {
   beforeEach(() => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
     for (const mock of Object.values(mocks)) {
       mock.mockReset().mockResolvedValue(contractId);
     }
@@ -324,4 +325,34 @@ describe("Contracts actions", () => {
       });
     },
   );
+
+  it("logs only fixed diagnostics for a failed email operation", async () => {
+    workflowMocks.sendContractDocument.mockRejectedValueOnce(
+      new Error("UNEXPECTED_ERROR", {
+        cause: new Error("CONTRACT_EMAIL_SEND_FAILED", {
+          cause: new Error("private provider payload"),
+        }),
+      }),
+    );
+
+    const result = await markContractSentAction({
+      contract_id: contractId,
+      recipient_email: "client@example.test",
+    });
+
+    expect(result).toMatchObject({
+      success: false,
+      error: { code: "UNEXPECTED_ERROR" },
+    });
+    const logged = vi.mocked(console.error).mock.calls[0]?.[0] as string;
+    expect(JSON.parse(logged)).toMatchObject({
+      level: "error",
+      module: "contracts",
+      operation: "send_email",
+      code: "UNEXPECTED_ERROR",
+      diagnosticCode: "CONTRACT_EMAIL_SEND_FAILED",
+    });
+    expect(logged).not.toContain("private provider payload");
+    expect(logged).not.toContain("client@example.test");
+  });
 });

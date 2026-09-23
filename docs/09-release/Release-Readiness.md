@@ -68,7 +68,7 @@ D — opcional / pós-MVP
 | Ambiente de produção | `NOT CONFIGURED` | B | Nenhum ambiente Supabase/Vercel de produção foi comprovado nesta documentação. |
 | Resend real | `NOT CONFIGURED` | B | Variáveis estão documentadas, mas domínio/remetente e envio real não foram validados. |
 | Backup e recuperação | `NOT CONFIGURED` | B/C | Runbook e objetivos propostos existem; backup, retenção aprovada e restore testado ainda não estão configurados. |
-| Observabilidade mínima | `NOT CONFIGURED` | C | Não há serviço/processo de monitorização e alertas mínimos comprovado. |
+| Observabilidade mínima | `NEEDS WORK` | C | Logs estruturados, captura server-side e health existem localmente; destino, monitor externo e alertas ainda dependem de staging/produção. |
 | CI/CD | `NOT CONFIGURED` | C | Scripts existem, mas não há pipeline versionado encontrado. |
 | Deploy de produção | `NOT CONFIGURED` | B/C | Domínio, HTTPS, variáveis, migrations e smoke pós-deploy ainda precisam ser executados. |
 
@@ -98,7 +98,7 @@ mas o ambiente e os controles operacionais de produção ainda não estão confi
 | Dashboard consolidado | `READY` | Dados reais, matriz por role, timezone e 4 E2E específicos aprovados. |
 | Ausência de dados fake | `READY` | Dashboard e módulos utilizam fontes reais; Agenda e reuniões fictícias permanecem ausentes. |
 | Totais duplicados | `READY` | Dashboard deriva os indicadores no banco e não persiste agregados próprios. |
-| Suíte local atual | `READY` | pgTAP: 18/688 e E2E: 37 aprovados no fechamento da Sprint 06; unit/app atualizado nesta fase para 48 arquivos/693 testes aprovados. |
+| Suíte local atual | `READY` | pgTAP: 18/688 e E2E: 37 aprovados no fechamento da Sprint 06; unit/app atualizado nesta fase para 51 arquivos/707 testes aprovados. |
 
 Smoke funcional obrigatório antes do `GO`:
 
@@ -141,6 +141,8 @@ Smoke funcional obrigatório antes do `GO`:
 | Build de produção local | `READY` | `next build` aprovado no fechamento técnico. |
 | Production baseline | `READY` | Checklist reproduzível de staging/produção, migrations, Auth, RLS/Grants, Storage, OWNER e pós-migration documentado. |
 | Recovery runbook | `READY` | Procedimentos de backup, restore, validação, incidentes e responsabilidades documentados. |
+| Resend & Monitoring runbook | `READY` | Configuração do domínio, teste controlado, sinais técnicos, health e resposta inicial a incidentes documentados. |
+| Contrato local de e-mail | `READY` | Configuração obrigatória validada antes do envio; falhas do provider mantêm `GENERATED` e não expõem detalhes à UI. |
 
 ---
 
@@ -173,8 +175,11 @@ Não executar `db reset`, fixtures E2E ou qualquer script destrutivo contra prod
 | Domínio validado | `NOT CONFIGURED` | Validar domínio e registros DNS exigidos pelo Resend. |
 | Envio real controlado | `NOT CONFIGURED` | Enviar um Contract de teste para destinatário controlado e confirmar entrega/erro seguro. |
 | Transição `SENT` | `READY` | Semântica de somente marcar após sucesso está coberta unitariamente; confirmar uma vez com provider real. |
+| Validação local de configuração | `READY` | Ausência de key/remetente e remetente inválido falham com código seguro antes de contactar o Resend. |
 
 O envio real é blocker porque faz parte do fluxo entregue de Contratos. Não criar bypass, fila, cron ou provider alternativo para liberar o release.
+
+O procedimento de domínio/remetente e o ensaio controlado em staging estão em `docs/09-release/Resend-Monitoring-Runbook.md`.
 
 ---
 
@@ -244,14 +249,17 @@ O runbook oficial está em `docs/09-release/Backup-Recovery-Runbook.md`. `READY`
 
 | Item | Estado | Trabalho necessário |
 |---|---|---|
-| Logs de aplicação | `NOT CONFIGURED` | Garantir captura server-side sem secrets, payloads sensíveis ou snapshots de Contracts. |
-| Erros de produção | `NOT CONFIGURED` | Configurar destino mínimo, correlação e responsável por triagem. |
-| Health monitoring | `NOT CONFIGURED` | Monitorar disponibilidade do Login e de uma rota segura sem expor dados. |
+| Logs de aplicação | `READY` | Eventos JSON com níveis, módulo, operação e códigos predefinidos são emitidos server-side, sem payloads, secrets ou snapshots; confirmar captura do runtime em staging. |
+| Erros de produção | `NEEDS WORK` | Falhas capturadas em Actions e pelo Next.js deixam sinal técnico local; falta configurar destino, retenção e responsável por triagem. |
+| Health monitoring | `NEEDS WORK` | Endpoint `/api/health` implementado para aplicação e Supabase Auth; falta monitor externo e validação no ambiente candidato. |
 | Alertas mínimos | `NOT CONFIGURED` | Alertar sobre indisponibilidade, falha recorrente e erro de deploy com destinatário definido. |
+| Runbook de monitoramento | `READY` | Sinais, limitações do health e resposta inicial documentados. |
 | Activity Logs de domínio | `READY` | Atendem auditoria de negócio, mas não substituem telemetria técnica. |
 | APM distribuído complexo | `OUT OF SCOPE` | Adotar somente se evidência posterior justificar. |
 
 Não registrar tokens, cookies, conteúdo de documentos, snapshot completo, dados fiscais ou credenciais em logs técnicos.
+
+O health não verifica PostgreSQL, Storage nem Resend. Esses serviços exigem smoke e monitoramento próprios, conforme `docs/09-release/Resend-Monitoring-Runbook.md`.
 
 ## CI/CD
 
@@ -417,6 +425,7 @@ smoke pós-deploy
 
 ## Observability e CI/CD
 
+- [x] Logging server-side e health mínimo foram implementados e testados localmente.
 - [ ] Logs e erros não expõem dados sensíveis.
 - [ ] Health monitoring e alertas mínimos estão ativos.
 - [ ] Pipeline obrigatório passou no commit candidato.
@@ -449,7 +458,7 @@ NO-GO
 2. migrations, Auth URLs, bucket privado e OWNER inicial ainda não validados em ambiente candidato;
 3. `RESEND_API_KEY`, `CONTRACTS_EMAIL_FROM`, domínio e envio real controlado não configurados;
 4. backup remoto não ativado, retenção e RPO/RTO ainda não aprovados e restore ainda não testado;
-5. observabilidade e alertas mínimos não configurados;
+5. destino operacional dos logs, monitor externo e alertas mínimos ainda não configurados;
 6. pipeline CI/CD, estratégia de migration e rollback não versionados/ensaiados;
 7. validação efetiva de schema remoto, cookies e headers no domínio HTTPS pendente;
 8. smoke completo, refinamento UX/UI e auditoria de acessibilidade pendentes;

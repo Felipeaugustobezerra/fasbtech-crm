@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 
+import { logServerEvent } from "@/lib/observability/server-logger";
 import {
   archiveDemandSchema,
   changeDemandStatusSchema,
@@ -87,6 +88,7 @@ function validationFailure(error: z.ZodError): DemandActionResult {
 }
 
 async function executeDemandAction(
+  operationName: string,
   operation: () => Promise<string>,
 ): Promise<DemandActionResult> {
   try {
@@ -108,6 +110,13 @@ async function executeDemandAction(
       }
     }
 
+    logServerEvent({
+      level: "error",
+      module: "demands",
+      operation: operationName,
+      code,
+    });
+
     return { success: false, error: { code, message: errorMessages[code] } };
   }
 }
@@ -116,7 +125,7 @@ export async function createDemandAction(input: unknown): Promise<DemandActionRe
   const parsed = createDemandSchema.safeParse(input);
   if (!parsed.success) return validationFailure(parsed.error);
 
-  return executeDemandAction(() => createDemand({
+  return executeDemandAction("create", () => createDemand({
     ...parsed.data,
     assignee_membership_ids: parsed.data.assignee_membership_ids ?? [],
   }));
@@ -141,31 +150,31 @@ export async function updateDemandAction(
   const parsed = updateDemandSchema.safeParse(input);
   if (!parsed.success) return validationFailure(parsed.error);
 
-  return executeDemandAction(() => updateDemand(parsedId.data, parsed.data));
+  return executeDemandAction("update", () => updateDemand(parsedId.data, parsed.data));
 }
 
 export async function changeDemandStatusAction(input: unknown): Promise<DemandActionResult> {
   const parsed = changeDemandStatusSchema.safeParse(input);
   if (!parsed.success) return validationFailure(parsed.error);
-  return executeDemandAction(() => changeDemandStatus(parsed.data));
+  return executeDemandAction("change_status", () => changeDemandStatus(parsed.data));
 }
 
 export async function setDemandAssigneesAction(input: unknown): Promise<DemandActionResult> {
   const parsed = setDemandAssigneesSchema.safeParse(input);
   if (!parsed.success) return validationFailure(parsed.error);
-  return executeDemandAction(() => setDemandAssignees(parsed.data));
+  return executeDemandAction("set_assignees", () => setDemandAssignees(parsed.data));
 }
 
 export async function setDemandTagsAction(input: unknown): Promise<DemandActionResult> {
   const parsed = setDemandTagsSchema.safeParse(input);
   if (!parsed.success) return validationFailure(parsed.error);
-  return executeDemandAction(() => setDemandTags(parsed.data));
+  return executeDemandAction("set_tags", () => setDemandTags(parsed.data));
 }
 
 export async function archiveDemandAction(input: unknown): Promise<DemandActionResult> {
   const parsed = archiveDemandSchema.safeParse(input);
   if (!parsed.success) return validationFailure(parsed.error);
-  return executeDemandAction(() => archiveDemand(parsed.data));
+  return executeDemandAction("archive", () => archiveDemand(parsed.data));
 }
 
 export async function getEligibleDemandAssigneesAction(
@@ -188,6 +197,12 @@ export async function getEligibleDemandAssigneesAction(
     const assignees = await listEligibleDemandAssignees(parsed.data);
     return { success: true, data: { assignees } };
   } catch {
+    logServerEvent({
+      level: "error",
+      module: "demands",
+      operation: "eligible_assignees",
+      code: "DATABASE_ERROR",
+    });
     return {
       success: false,
       error: {

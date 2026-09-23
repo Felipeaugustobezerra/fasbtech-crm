@@ -232,4 +232,22 @@ describe("demand actions", () => {
     expect(result).toEqual({ success: false, error: { code: "DATABASE_ERROR", message: "Não foi possível carregar os responsáveis elegíveis." } });
     expect(JSON.stringify(result)).not.toContain("private database details");
   });
+
+  it("records a failed RPC operation without its private cause", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    mocks.createDemand.mockRejectedValueOnce(
+      new Error("DATABASE_ERROR", { cause: new Error("private SQL detail") }),
+    );
+
+    await createDemandAction({ client_id: id, title: "Demanda" });
+
+    const logged = spy.mock.calls[0]?.[0] as string;
+    expect(JSON.parse(logged)).toMatchObject({
+      module: "demands",
+      operation: "create",
+      code: "DATABASE_ERROR",
+    });
+    expect(logged).not.toContain("private SQL detail");
+    spy.mockRestore();
+  });
 });

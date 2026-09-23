@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { logServerEvent } from "@/lib/observability/server-logger";
 import {
   addOrganizationMemberSchema,
   clientAccessSchema,
@@ -71,6 +72,12 @@ export async function addOrganizationMemberAction(
 
     return { success: true, membershipId };
   } catch {
+    logServerEvent({
+      level: "error",
+      module: "access",
+      operation: "add_member",
+      code: "OPERATION_FAILED",
+    });
     return {
       success: false,
       code: "OPERATION_FAILED",
@@ -102,6 +109,12 @@ export async function updateOrganizationMemberRoleAction(
 
     return { success: true, membershipId: updatedMembershipId };
   } catch {
+    logServerEvent({
+      level: "error",
+      module: "access",
+      operation: "update_role",
+      code: "OPERATION_FAILED",
+    });
     return {
       success: false,
       code: "OPERATION_FAILED",
@@ -131,6 +144,12 @@ export async function assignClientAccessAction(
 
     return { success: true, assignmentId };
   } catch {
+    logServerEvent({
+      level: "error",
+      module: "access",
+      operation: "assign_client",
+      code: "OPERATION_FAILED",
+    });
     return {
       success: false,
       code: "OPERATION_FAILED",
@@ -160,6 +179,12 @@ export async function removeClientAccessAction(
 
     return { success: true, assignmentId };
   } catch {
+    logServerEvent({
+      level: "error",
+      module: "access",
+      operation: "remove_client",
+      code: "OPERATION_FAILED",
+    });
     return {
       success: false,
       code: "OPERATION_FAILED",

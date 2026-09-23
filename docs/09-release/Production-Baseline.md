@@ -33,6 +33,8 @@ Staging e produção não podem compartilhar projeto Supabase, utilizadores, Sto
 | `RESEND_API_KEY` | Server-only | Opcional para testes controlados | Secret próprio | Secret de produção |
 | `CONTRACTS_EMAIL_FROM` | Server-only | Remetente controlado | Remetente de staging | Remetente oficial validado |
 
+O procedimento de domínio/remetente, teste real controlado e monitoramento está em `docs/09-release/Resend-Monitoring-Runbook.md`.
+
 Regras:
 
 - configurar valores somente no ambiente local ignorado pelo Git ou no cofre do provedor;

@@ -41,6 +41,23 @@ describe("client actions", () => {
     mocks.updateClient.mockReset();
   });
 
+  it("records a Service failure without Client data", async () => {
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    mocks.createClient.mockRejectedValueOnce(new Error("private database detail"));
+
+    await createClientAction(validInput);
+
+    const logged = spy.mock.calls[0]?.[0] as string;
+    expect(JSON.parse(logged)).toMatchObject({
+      module: "clients",
+      operation: "create",
+      code: "OPERATION_FAILED",
+    });
+    expect(logged).not.toContain(validInput.email);
+    expect(logged).not.toContain("private database detail");
+    spy.mockRestore();
+  });
+
   it("validates and normalizes input before creating a client", async () => {
     mocks.createClient.mockResolvedValue(clientId);
 
