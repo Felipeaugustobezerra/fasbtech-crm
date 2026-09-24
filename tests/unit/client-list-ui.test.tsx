@@ -98,9 +98,9 @@ describe("clients list UI", () => {
       screen.getByRole("table", { name: "Lista de clientes autorizados" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("rowheader", { name: client.name })).toBeVisible();
-    expect(screen.getByText(client.company_name!)).toBeVisible();
-    expect(screen.getByText(client.email!)).toBeVisible();
-    expect(screen.getByText(client.phone!)).toBeVisible();
+    expect(screen.getAllByText(client.company_name!)).toHaveLength(2);
+    expect(screen.getAllByText(client.email!)).toHaveLength(2);
+    expect(screen.getAllByText(client.phone!)).toHaveLength(2);
   });
 
   it("renders the collection empty state", async () => {
