@@ -69,7 +69,7 @@ D — opcional / pós-MVP
 | Resend real | `NOT CONFIGURED` | B | Variáveis estão documentadas, mas domínio/remetente e envio real não foram validados. |
 | Backup e recuperação | `NOT CONFIGURED` | B/C | Runbook e objetivos propostos existem; backup, retenção aprovada e restore testado ainda não estão configurados. |
 | Observabilidade mínima | `NEEDS WORK` | C | Logs estruturados, captura server-side e health existem localmente; destino, monitor externo e alertas ainda dependem de staging/produção. |
-| CI/CD | `NOT CONFIGURED` | C | Scripts existem, mas não há pipeline versionado encontrado. |
+| CI/CD | `NEEDS WORK` | C | Pipeline de aplicação e banco local versionado; falta confirmar o primeiro run no GitHub, proteger `master` e configurar promoção de staging/produção. |
 | Deploy de produção | `NOT CONFIGURED` | B/C | Domínio, HTTPS, variáveis, migrations e smoke pós-deploy ainda precisam ser executados. |
 
 Readiness geral atual:
@@ -267,15 +267,15 @@ O health não verifica PostgreSQL, Storage nem Resend. Esses serviços exigem sm
 
 | Item | Estado | Trabalho necessário |
 |---|---|---|
-| Pipeline versionado | `NOT CONFIGURED` | Criar pipeline mínimo; nenhum workflow foi identificado no repositório. |
+| Pipeline versionado | `READY` | Workflow mínimo de PR/push em `master` criado sem secrets; confirmar execução no GitHub antes de exigir checks. |
 | Install reproduzível | `READY` | Utilizar lockfile e Node `>=22` conforme contrato do projeto. |
-| Validações de aplicação | `NEEDS WORK` | Tornar `lint`, `typecheck`, `test` e `build` gates obrigatórios. |
-| Validações de banco | `NEEDS WORK` | Executar reset/lint/pgTAP somente em ambiente local/isolado protegido. |
-| E2E | `NEEDS WORK` | Executar com Supabase isolado e guard `LOCAL ONLY`; nunca apontar fixtures para produção. |
+| Validações de aplicação | `NEEDS WORK` | `test`, `typecheck`, `lint` e `build` já são gates do workflow; falta primeiro run aprovado e branch protection remota. |
+| Validações de banco | `NEEDS WORK` | Reset/lint/pgTAP configurados somente no runner local isolado; confirmar primeiro run e estabilidade no GitHub. |
+| E2E | `NEEDS WORK` | Suíte local completa antes de release e smoke seguro em staging; não executar fixtures/reset contra ambiente remoto. |
 | Migrations no deploy | `NOT CONFIGURED` | Definir responsável, credencial, ordem e verificação pós-aplicação. |
 | Deploy | `NOT CONFIGURED` | Definir staging, produção, proteção de branch e promoção controlada. |
-| Rollback da aplicação | `NOT CONFIGURED` | Documentar retorno ao artefato anterior. |
-| Rollback de banco | `NEEDS WORK` | Preferir migrations corretivas; definir restore para falha não reversível. Nunca usar reset. |
+| Rollback da aplicação | `NEEDS WORK` | Estratégia de retorno ao deploy anterior compatível documentada; falta plataforma/artefato implantado para ensaio. |
+| Rollback de banco | `NEEDS WORK` | Migration corretiva ou restore isolado documentados; nunca usar reset ou rollback SQL destrutivo automático. |
 
 Pipeline mínimo recomendado:
 
@@ -307,7 +307,7 @@ smoke pós-deploy
 
 | Item | Estado | Trabalho necessário |
 |---|---|---|
-| Plataforma | `NEEDS WORK` | Confirmar Vercel + Supabase conforme ADR-001 e responsáveis operacionais. |
+| Plataforma | `NEEDS WORK` | Vercel + Supabase constam na ADR-001; falta configurar projetos e responsáveis operacionais. |
 | Staging | `NOT CONFIGURED` | Criar ambiente candidato separado de produção. |
 | Variáveis | `NOT CONFIGURED` | Configurar por ambiente, sem valores no repositório. |
 | Migrations | `NOT CONFIGURED` | Aplicar e validar antes de liberar tráfego. |

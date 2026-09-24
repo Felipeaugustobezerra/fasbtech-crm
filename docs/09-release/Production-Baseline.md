@@ -22,6 +22,8 @@ Definir a configuração mínima e reproduzível para staging e produção sem r
 
 Staging e produção não podem compartilhar projeto Supabase, utilizadores, Storage ou secrets. Fixtures, `db reset` e scripts marcados como local-only nunca podem ser executados contra staging ou produção.
 
+Os gates de CI, a promoção local → staging → produção, o smoke, a separação de secrets e a estratégia de rollback estão definidos em `docs/09-release/CI-Staging-Runbook.md`. Nenhum deploy remoto está automatizado nesta fase.
+
 ---
 
 # Variáveis de Ambiente

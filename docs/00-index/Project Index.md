@@ -1004,6 +1004,7 @@ Após a conclusão das Sprints 01–06, a fase ativa é exclusivamente operacion
 - [[docs/09-release/Production-Baseline]]
 - [[docs/09-release/Backup-Recovery-Runbook]]
 - [[docs/09-release/Resend-Monitoring-Runbook]]
+- [[docs/09-release/CI-Staging-Runbook]]
 
 Status atual:
 
