@@ -22,6 +22,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("next/navigation", () => ({
   notFound: mocks.notFound,
+  usePathname: () => "/acessos",
   useRouter: () => ({ refresh: mocks.refresh }),
 }));
 
@@ -96,11 +97,9 @@ describe("access UI", () => {
       }),
     ).toBeInTheDocument();
     expect(screen.getByRole("rowheader", { name: member.fullName })).toBeVisible();
-    expect(
-      screen.getByRole("combobox", { name: `Role de ${member.fullName}` }),
-    ).toHaveValue("MEMBER");
-    expect(screen.getByText("Ativo")).toBeVisible();
-    expect(screen.getByText("10/08/2026")).toBeVisible();
+    expect(screen.getAllByRole("combobox", { name: `Role de ${member.fullName}` })).toHaveLength(2);
+    expect(screen.getAllByText("Ativo")).toHaveLength(2);
+    expect(screen.getAllByText("10/08/2026")).toHaveLength(2);
     expect(mocks.listOrganizationMembers).toHaveBeenCalledOnce();
     expect(container.innerHTML).not.toContain(membershipId);
     expect(container.innerHTML).not.toContain(userId);

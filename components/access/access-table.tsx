@@ -67,7 +67,20 @@ export function AccessTable({ members }: AccessTableProps) {
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <>
+      <div className="space-y-3 md:hidden">
+        {members.map((member) => (
+          <article key={member.membershipId} className="min-w-0 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="break-words font-semibold text-slate-950">{member.fullName}</h2>
+            <dl className="mt-4 grid gap-4 text-sm">
+              <div><dt className="font-medium text-slate-600">Role</dt><dd className="mt-1"><MemberRoleForm membershipId={member.membershipId} fullName={member.fullName} initialRole={member.role} /></dd></div>
+              <div><dt className="font-medium text-slate-600">Estado</dt><dd className="mt-1 text-slate-900">{statusLabels[member.status] ?? member.status}</dd></div>
+              <div><dt className="font-medium text-slate-600">Entrada</dt><dd className="mt-1 text-slate-900"><time dateTime={member.membershipCreatedAt}>{formatDate(member.membershipCreatedAt)}</time></dd></div>
+            </dl>
+          </article>
+        ))}
+      </div>
+      <div className="hidden overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm md:block">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[52rem] border-collapse text-left">
           <caption className="sr-only">
@@ -135,6 +148,7 @@ export function AccessTable({ members }: AccessTableProps) {
           </tbody>
         </table>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

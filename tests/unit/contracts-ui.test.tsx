@@ -27,13 +27,14 @@ describe("Contracts UI", () => {
   beforeEach(() => {
     for (const mock of Object.values(mocks)) mock.mockReset();
     const success = { success: true, data: { contractId } };
-    mocks.createContractAction.mockResolvedValue(success); mocks.updateDraftContractAction.mockResolvedValue(success); mocks.generateContractAction.mockResolvedValue(success); mocks.markContractSentAction.mockResolvedValue(success); mocks.markContractSignedAction.mockResolvedValue(success); mocks.cancelContractAction.mockResolvedValue(success); mocks.createContractTemplateAction.mockResolvedValue({ success: true, data: { contractTemplateId: templateId } });
+    mocks.createContractAction.mockResolvedValue(success); mocks.updateDraftContractAction.mockResolvedValue(success); mocks.generateContractAction.mockResolvedValue(success); mocks.markContractSentAction.mockResolvedValue(success); mocks.markContractSignedAction.mockResolvedValue(success); mocks.cancelContractAction.mockResolvedValue(success); mocks.createContractTemplateAction.mockResolvedValue({ success: true, data: { contractTemplateId: templateId } }); mocks.deactivateContractTemplateAction.mockResolvedValue({ success: true, data: { contractTemplateId: templateId } });
   });
 
   it("renders operational Contract data without administrative fields", () => {
     render(<ContractList items={[{ id: contractId, client_id: clientId, template_id: templateId, title: "Contrato anual", status: "DRAFT", generated_at: null, sent_at: null, signed_at: null, canceled_at: null, created_at: "2026-09-19T10:00:00Z", updated_at: "2026-09-19T10:00:00Z" }]} clients={clients} templates={templates} hasFilters={false} />);
-    expect(screen.getByRole("link", { name: "Contrato anual" })).toHaveAttribute("href", `/contratos/${contractId}`);
-    expect(screen.getByText("Cliente XPTO")).toBeVisible();
+    expect(screen.getAllByRole("link", { name: "Contrato anual" })).toHaveLength(2);
+    expect(screen.getAllByRole("link", { name: "Contrato anual" })[0]).toHaveAttribute("href", `/contratos/${contractId}`);
+    expect(screen.getAllByText("Cliente XPTO")).toHaveLength(2);
     expect(screen.queryByText("organization_id")).toBeNull();
   });
 
@@ -71,6 +72,24 @@ describe("Contracts UI", () => {
     const signed = new File(["%PDF-1.7"], "signed.pdf", { type: "application/pdf" });
     await user.upload(screen.getByLabelText("Cópia assinada em PDF"), signed); await user.click(screen.getByRole("button", { name: "Guardar cópia e marcar Assinado" }));
     await waitFor(() => expect(mocks.markContractSignedAction).toHaveBeenCalledWith({ contract_id: contractId, file: signed }));
+  });
+
+  it("requires explicit confirmation before canceling a Contract", async () => {
+    const user = userEvent.setup();
+    render(<ContractLifecycle contractId={contractId} status="GENERATED" snapshot={snapshot} />);
+    await user.click(screen.getByRole("button", { name: "Cancelar Contrato" }));
+    expect(mocks.cancelContractAction).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Confirmar cancelamento" }));
+    await waitFor(() => expect(mocks.cancelContractAction).toHaveBeenCalledWith({ contract_id: contractId }));
+  });
+
+  it("requires explicit confirmation before deactivating a Template", async () => {
+    const user = userEvent.setup();
+    render(<TemplateManager templates={templates} />);
+    await user.click(screen.getByRole("button", { name: "Desativar" }));
+    expect(mocks.deactivateContractTemplateAction).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Confirmar desativação" }));
+    await waitFor(() => expect(mocks.deactivateContractTemplateAction).toHaveBeenCalledWith({ template_id: templateId }));
   });
 
   it("presents original and signed documents separately without object paths", () => {

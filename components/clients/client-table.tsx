@@ -101,7 +101,23 @@ export function ClientTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <>
+      <div className="space-y-3 md:hidden">
+        {clients.map((client) => (
+          <article key={client.id} className="min-w-0 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="break-words font-semibold text-slate-950">
+              <Link href={`/clientes/${client.id}`} className="text-blue-800 hover:underline">{client.name}</Link>
+            </h2>
+            {client.company_name ? <p className="mt-1 break-words text-sm text-slate-600">{client.company_name}</p> : null}
+            <dl className="mt-4 grid gap-3 text-sm">
+              <div className="min-w-0"><dt className="font-medium text-slate-600">E-mail</dt><dd className="mt-1 break-all text-slate-900">{client.email ?? "—"}</dd></div>
+              <div><dt className="font-medium text-slate-600">Telefone</dt><dd className="mt-1 text-slate-900">{client.phone ?? "—"}</dd></div>
+              <div><dt className="font-medium text-slate-600">Atualizado em</dt><dd className="mt-1 text-slate-900">{formatDate(client.updated_at)}</dd></div>
+            </dl>
+          </article>
+        ))}
+      </div>
+      <div className="hidden overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm md:block">
       <div className="overflow-x-auto">
         <table className="min-w-[56rem] w-full border-collapse text-left">
           <caption className="sr-only">Lista de clientes autorizados</caption>
@@ -170,6 +186,7 @@ export function ClientTable({
           </tbody>
         </table>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

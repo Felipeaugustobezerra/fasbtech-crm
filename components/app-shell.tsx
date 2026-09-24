@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 
 import { logout } from "@/app/(private)/actions";
 
@@ -55,7 +59,7 @@ const roleLabels: Record<AppRole, string> = {
   MEMBER: "Membro",
 };
 
-function NavigationItems({ role }: Readonly<{ role: AppRole }>) {
+function NavigationItems({ role, onNavigate }: Readonly<{ role: AppRole; onNavigate?: () => void }>) {
   return (
     <nav aria-label="Navegação principal" className="space-y-1">
       {navigation.map((item) => {
@@ -87,6 +91,7 @@ function NavigationItems({ role }: Readonly<{ role: AppRole }>) {
           <Link
             key={item.label}
             href={item.href}
+            onClick={onNavigate}
             className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
           >
             {item.label}
@@ -104,6 +109,13 @@ export function AppShell({
   organizationName,
   role,
 }: AppShellProps) {
+  const pathname = usePathname();
+  const mobileMenuRef = useRef<HTMLDetailsElement>(null);
+
+  useEffect(() => {
+    if (mobileMenuRef.current) mobileMenuRef.current.open = false;
+  }, [pathname]);
+
   const normalizedFullName = fullName?.trim();
 
   const hasDistinctFullName =
@@ -148,7 +160,7 @@ export function AppShell({
         <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
           <div className="flex min-h-16 items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
             <div className="md:hidden">
-              <details className="relative">
+              <details ref={mobileMenuRef} className="relative">
                 <summary className="cursor-pointer list-none rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
                   Menu
                 </summary>
@@ -162,7 +174,9 @@ export function AppShell({
                     </p>
                   </div>
 
-                  <NavigationItems role={role} />
+                  <NavigationItems role={role} onNavigate={() => {
+                    if (mobileMenuRef.current) mobileMenuRef.current.open = false;
+                  }} />
                 </div>
               </details>
             </div>
@@ -204,8 +218,8 @@ export function AppShell({
           </div>
         </header>
 
-        <main className="px-5 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
-          {children}
+        <main className="min-w-0 px-4 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+          <div className="mx-auto w-full max-w-7xl min-w-0">{children}</div>
         </main>
       </div>
     </div>

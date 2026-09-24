@@ -134,6 +134,8 @@ test.describe("Contratos — lifecycle, documentos e autorização", () => {
   test("GENERATED pode ser cancelado e torna-se terminal", async () => {
     await ownerPage.goto(`/contratos/${contractId}`);
     await ownerPage.getByRole("button", { name: "Cancelar Contrato" }).click();
+    await expect(statusBadge(ownerPage, "Gerado")).toBeVisible();
+    await ownerPage.getByRole("button", { name: "Confirmar cancelamento" }).click();
     await expect(statusBadge(ownerPage, "Cancelado")).toBeVisible();
     await expect(ownerPage.getByText(/estado terminal/iu)).toBeVisible();
     await expect(ownerPage.getByRole("button", { name: /Gerar|Enviar|Assinado|Cancelar/u })).toHaveCount(0);
@@ -155,6 +157,8 @@ test.describe("Contratos — lifecycle, documentos e autorização", () => {
     const fixture = E2E_FIXTURES.contracts.sentForCancellation;
     await ownerPage.goto(`/contratos/${fixture.id}`);
     await ownerPage.getByRole("button", { name: "Cancelar Contrato" }).click();
+    await expect(statusBadge(ownerPage, "Enviado")).toBeVisible();
+    await ownerPage.getByRole("button", { name: "Confirmar cancelamento" }).click();
     await expect(statusBadge(ownerPage, "Cancelado")).toBeVisible();
     await expect(ownerPage.getByRole("article").filter({ hasText: "PDF original" }).getByRole("link", { name: "Transferir PDF" })).toBeVisible();
     await expect(ownerPage.getByText(/estado terminal/iu)).toBeVisible();
@@ -164,6 +168,8 @@ test.describe("Contratos — lifecycle, documentos e autorização", () => {
     await ownerPage.goto("/contratos/templates");
     const edit = templateForm(ownerPage, TEMPLATE.updated);
     await edit.getByRole("button", { name: "Desativar" }).click();
+    await expect(edit.getByText("Ativo", { exact: true })).toBeVisible();
+    await edit.getByRole("button", { name: "Confirmar desativação" }).click();
     await expect(templateForm(ownerPage, TEMPLATE.updated).getByText("Inativo", { exact: true })).toBeVisible();
     await ownerPage.goto("/contratos/novo");
     await expect(ownerPage.getByLabel(/Template/).getByRole("option", { name: TEMPLATE.updated })).toHaveCount(0);

@@ -63,7 +63,7 @@ D — opcional / pós-MVP
 | Núcleo funcional | `READY` | A | Sprints 01–06 concluídas, com banco, aplicação e E2E aprovados. |
 | Segurança da aplicação e banco | `READY` | A | Auth, RLS, Grants, RPCs e Storage privado possuem contratos e testes locais. |
 | Verificação final de segurança para produção | `NEEDS WORK` | C | Baseline local de headers, cookies, env e secrets concluído; falta validar o ambiente efetivamente implantado. |
-| UX/UI de release | `NEEDS WORK` | C | Fluxos funcionam, mas falta passagem final sistemática de consistência, responsividade e feedback. |
+| UX/UI de release | `NEEDS WORK` | C | Largura base, cartões móveis e confirmações críticas foram ajustados localmente; falta validação visual em dispositivos e passagem final dos demais formulários. |
 | Acessibilidade | `NEEDS WORK` | C | Regras estão documentadas e há semântica básica, mas falta auditoria final WCAG 2.2 AA. |
 | Ambiente de produção | `NOT CONFIGURED` | B | Nenhum ambiente Supabase/Vercel de produção foi comprovado nesta documentação. |
 | Resend real | `NOT CONFIGURED` | B | Variáveis estão documentadas, mas domínio/remetente e envio real não foram validados. |
@@ -198,11 +198,11 @@ O procedimento de domínio/remetente e o ensaio controlado em staging estão em 
 
 | Item | Estado | Trabalho necessário |
 |---|---|---|
-| Consistência visual | `NEEDS WORK` | Passagem final entre Dashboard, Clientes, Demandas, Financeiro, Contratos e Acessos. |
-| Responsividade | `NEEDS WORK` | Validar desktop e mobile nos fluxos críticos, especialmente tabelas, filtros e formulários. |
+| Consistência visual | `NEEDS WORK` | AppShell passou a limitar a largura do conteúdo e os cards do Dashboard tratam textos longos; verificar visualmente os módulos em conjunto. |
+| Responsividade | `NEEDS WORK` | Clientes, Contratos e Acessos ganharam cartões móveis, mantendo tabelas desktop; validar visualmente mobile, tablet e desktop, incluindo filtros e formulários. |
 | Navegação | `NEEDS WORK` | Confirmar menu por role, página ativa, retorno após mutation e rotas diretas. |
 | Formulários | `NEEDS WORK` | Conferir labels, required, mensagens, preservação do input e prevenção de duplo envio. |
-| Ações destrutivas | `NEEDS WORK` | Confirmar descrição da consequência e confirmação explícita para archive/cancel/remove. |
+| Ações destrutivas | `READY` | Archive e remoção existentes, cancelamento de Contract e desativação de Template exigem confirmação explícita com consequência descrita; fluxos cobertos por testes locais. |
 | Refinamento visual geral | `NEEDS WORK` | Corrigir inconsistências reais de espaçamento, hierarquia e legibilidade sem redesign ou nova feature. |
 
 ## Accessibility

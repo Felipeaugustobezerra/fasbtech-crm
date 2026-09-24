@@ -38,9 +38,20 @@ export function ContractList({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <>
+      <div className="space-y-3 md:hidden">
+        {items.map((contract) => (
+          <article key={contract.id} className="min-w-0 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="break-words font-semibold text-slate-950"><Link href={`/contratos/${contract.id}`} className="text-blue-700 hover:underline">{contract.title}</Link></h2>
+            <p className="mt-1 break-words text-sm text-slate-600">{clientNames.get(contract.client_id) ?? "Cliente indisponível"}</p>
+            <span className="mt-3 inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">{CONTRACT_STATUS_LABELS[contract.status]}</span>
+            <dl className="mt-4 grid gap-3 text-sm"><div><dt className="font-medium text-slate-600">Template</dt><dd className="mt-1 break-words text-slate-900">{templateNames.get(contract.template_id) ?? "Template indisponível"}</dd></div><div><dt className="font-medium text-slate-600">Atualizado</dt><dd className="mt-1 text-slate-900">{formatContractDate(contract.updated_at)}</dd></div></dl>
+          </article>
+        ))}
+      </div>
+      <div className="hidden overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm md:block">
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-slate-200 text-sm">
+        <table className="min-w-[48rem] w-full divide-y divide-slate-200 text-sm">
           <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
             <tr><th className="px-4 py-3">Contrato</th><th className="px-4 py-3">Cliente</th><th className="px-4 py-3">Template</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Atualizado</th></tr>
           </thead>
@@ -57,6 +68,7 @@ export function ContractList({
           </tbody>
         </table>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

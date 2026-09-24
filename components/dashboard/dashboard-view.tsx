@@ -45,7 +45,7 @@ export function DashboardView({ role, data }: Props) {
         </p>
       </header>
 
-      <div className="mt-8 space-y-10">
+      <div className="mt-8 space-y-8 sm:space-y-10">
         <section aria-labelledby="executive-summary-title">
           <h2 id="executive-summary-title" className="text-xl font-semibold text-slate-950">
             Resumo executivo

@@ -11,7 +11,7 @@ export function DashboardCard({ label, value, href, detail }: Props) {
   const content = (
     <>
       <p className="text-sm font-medium text-slate-600">{label}</p>
-      <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+      <p className="mt-2 break-words text-2xl font-semibold tracking-tight text-slate-950">
         {value}
       </p>
       {detail ? <p className="mt-2 text-xs text-slate-500">{detail}</p> : null}
