@@ -64,7 +64,7 @@ D — opcional / pós-MVP
 | Segurança da aplicação e banco | `READY` | A | Auth, RLS, Grants, RPCs e Storage privado possuem contratos e testes locais. |
 | Verificação final de segurança para produção | `NEEDS WORK` | C | Baseline local de headers, cookies, env e secrets concluído; falta validar o ambiente efetivamente implantado. |
 | UX/UI de release | `NEEDS WORK` | C | Largura base, cartões móveis e confirmações críticas foram ajustados localmente; falta validação visual em dispositivos e passagem final dos demais formulários. |
-| Acessibilidade | `NEEDS WORK` | C | Regras estão documentadas e há semântica básica, mas falta auditoria final WCAG 2.2 AA. |
+| Acessibilidade | `NEEDS WORK` | C | Correções locais de semântica, foco, navegação e erros de formulário foram aplicadas; falta validação manual com teclado, zoom e tecnologia assistiva para confirmar WCAG 2.2 AA. |
 | Ambiente de produção | `NOT CONFIGURED` | B | Nenhum ambiente Supabase/Vercel de produção foi comprovado nesta documentação. |
 | Resend real | `NOT CONFIGURED` | B | Variáveis estão documentadas, mas domínio/remetente e envio real não foram validados. |
 | Backup e recuperação | `NOT CONFIGURED` | B/C | Runbook e objetivos propostos existem; backup, retenção aprovada e restore testado ainda não estão configurados. |
@@ -216,6 +216,8 @@ O procedimento de domínio/remetente e o ensaio controlado em staging estão em 
 | HTML semântico | `NEEDS WORK` | Revisar headings, landmarks, listas, tabelas e mensagens de status. |
 | Erros de formulário | `NEEDS WORK` | Confirmar associação campo–erro e anúncio por tecnologia assistiva. |
 | Modais/dialogs | `NEEDS WORK` | Validar nome, foco inicial, trap, Escape e restauração de foco onde existirem. |
+
+Revisão local: navegação principal identifica a página ativa e desloca o foco após mudança de rota; confirmações inline recebem foco, aceitam Escape e restauram o foco ao gatilho; a tabela de Contratos possui nome e cabeçalhos semânticos; erros de campos obrigatórios em formulários revistos estão associados aos controles. Permanecem necessárias verificações manuais de teclado ponta a ponta, leitores de tela, zoom/reflow e contraste nos estados reais antes de declarar conformidade WCAG 2.2 AA.
 
 Critério de saída: nenhuma falha WCAG 2.2 AA de severidade alta nos fluxos críticos; demais limitações conhecidas devem ser documentadas antes do `GO`.
 

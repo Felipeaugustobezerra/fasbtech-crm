@@ -59,9 +59,9 @@ const roleLabels: Record<AppRole, string> = {
   MEMBER: "Membro",
 };
 
-function NavigationItems({ role, onNavigate }: Readonly<{ role: AppRole; onNavigate?: () => void }>) {
+function NavigationItems({ role, pathname, mobile = false, onNavigate }: Readonly<{ role: AppRole; pathname: string; mobile?: boolean; onNavigate?: () => void }>) {
   return (
-    <nav aria-label="Navegação principal" className="space-y-1">
+    <nav aria-label={mobile ? "Navegação principal móvel" : "Navegação principal"} className="space-y-1">
       {navigation.map((item) => {
         if ("hiddenForAdmin" in item && item.hiddenForAdmin && role === "ADMIN") {
           return null;
@@ -92,7 +92,8 @@ function NavigationItems({ role, onNavigate }: Readonly<{ role: AppRole; onNavig
             key={item.label}
             href={item.href}
             onClick={onNavigate}
-            className="flex items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
+            aria-current={pathname === item.href || (item.href !== "/" && pathname.startsWith(`${item.href}/`)) ? "page" : undefined}
+            className="flex min-h-11 items-center rounded-lg px-3 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400 aria-[current=page]:bg-slate-800 aria-[current=page]:font-semibold aria-[current=page]:text-white"
           >
             {item.label}
           </Link>
@@ -111,9 +112,16 @@ export function AppShell({
 }: AppShellProps) {
   const pathname = usePathname();
   const mobileMenuRef = useRef<HTMLDetailsElement>(null);
+  const menuToggleRef = useRef<HTMLElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
+  const previousPathnameRef = useRef(pathname);
 
   useEffect(() => {
     if (mobileMenuRef.current) mobileMenuRef.current.open = false;
+    if (previousPathnameRef.current !== pathname) {
+      mainRef.current?.focus();
+      previousPathnameRef.current = pathname;
+    }
   }, [pathname]);
 
   const normalizedFullName = fullName?.trim();
@@ -138,7 +146,7 @@ export function AppShell({
         </div>
 
         <div className="flex-1 px-4 py-6">
-          <NavigationItems role={role} />
+          <NavigationItems role={role} pathname={pathname} />
         </div>
 
         <div className="border-t border-slate-800 px-5 py-5">
@@ -161,7 +169,7 @@ export function AppShell({
           <div className="flex min-h-16 items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
             <div className="md:hidden">
               <details ref={mobileMenuRef} className="relative">
-                <summary className="cursor-pointer list-none rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
+                <summary ref={menuToggleRef} className="flex min-h-11 cursor-pointer list-none items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
                   Menu
                 </summary>
 
@@ -174,8 +182,9 @@ export function AppShell({
                     </p>
                   </div>
 
-                  <NavigationItems role={role} onNavigate={() => {
+                  <NavigationItems role={role} pathname={pathname} mobile onNavigate={() => {
                     if (mobileMenuRef.current) mobileMenuRef.current.open = false;
+                    menuToggleRef.current?.focus();
                   }} />
                 </div>
               </details>
@@ -218,7 +227,7 @@ export function AppShell({
           </div>
         </header>
 
-        <main className="min-w-0 px-4 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+        <main ref={mainRef} tabIndex={-1} className="min-w-0 px-4 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12 focus:outline-none">
           <div className="mx-auto w-full max-w-7xl min-w-0">{children}</div>
         </main>
       </div>

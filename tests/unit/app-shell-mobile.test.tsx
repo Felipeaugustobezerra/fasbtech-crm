@@ -26,15 +26,19 @@ describe("AppShell mobile navigation", () => {
     await user.click(screen.getByText("Menu"));
     expect(menu).toHaveProperty("open", true);
     const mobileLink = within(menu!).getByRole("link", { name: "Clientes" });
+    expect(within(menu!).getByRole("navigation", { name: "Navegação principal móvel" })).toBeInTheDocument();
     mobileLink.addEventListener("click", (event) => event.preventDefault());
     await user.click(mobileLink);
     expect(menu).toHaveProperty("open", false);
+    expect(screen.getByText("Menu")).toHaveFocus();
 
     await user.click(screen.getByText("Menu"));
     expect(menu).toHaveProperty("open", true);
     act(() => { mocks.pathname = "/clientes"; rerender(shell()); });
     expect(menu).toHaveProperty("open", false);
+    expect(container.querySelector("main")).toHaveFocus();
     expect(within(desktop!).getByRole("link", { name: "Clientes" })).toHaveAttribute("href", "/clientes");
+    expect(within(desktop!).getByRole("link", { name: "Clientes" })).toHaveAttribute("aria-current", "page");
     expect(within(desktop!).getAllByRole("link")).toHaveLength(6);
   });
 });

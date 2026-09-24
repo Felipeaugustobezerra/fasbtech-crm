@@ -52,13 +52,14 @@ export function ContractList({
       <div className="hidden overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm md:block">
       <div className="overflow-x-auto">
         <table className="min-w-[48rem] w-full divide-y divide-slate-200 text-sm">
+          <caption className="sr-only">Lista de Contratos autorizados</caption>
           <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
-            <tr><th className="px-4 py-3">Contrato</th><th className="px-4 py-3">Cliente</th><th className="px-4 py-3">Template</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Atualizado</th></tr>
+            <tr><th scope="col" className="px-4 py-3">Contrato</th><th scope="col" className="px-4 py-3">Cliente</th><th scope="col" className="px-4 py-3">Template</th><th scope="col" className="px-4 py-3">Status</th><th scope="col" className="px-4 py-3">Atualizado</th></tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {items.map((contract) => (
               <tr key={contract.id}>
-                <td className="px-4 py-4 font-semibold text-slate-950"><Link className="text-blue-700 hover:underline" href={`/contratos/${contract.id}`}>{contract.title}</Link></td>
+                <th scope="row" className="px-4 py-4 text-left font-semibold text-slate-950"><Link className="text-blue-700 hover:underline" href={`/contratos/${contract.id}`}>{contract.title}</Link></th>
                 <td className="px-4 py-4 text-slate-700">{clientNames.get(contract.client_id) ?? "Cliente indisponível"}</td>
                 <td className="px-4 py-4 text-slate-700">{templateNames.get(contract.template_id) ?? "Template indisponível"}</td>
                 <td className="px-4 py-4"><span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">{CONTRACT_STATUS_LABELS[contract.status]}</span></td>

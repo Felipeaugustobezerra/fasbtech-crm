@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import { removeClientAccessAction } from "@/app/(private)/acessos/actions";
 
@@ -22,6 +22,17 @@ export function RemoveClientAccess({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const confirmRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (isConfirming) confirmRef.current?.focus();
+  }, [isConfirming]);
+
+  function closeConfirmation() {
+    setIsConfirming(false);
+    requestAnimationFrame(() => triggerRef.current?.focus());
+  }
 
   async function handleRemove() {
     if (isSubmitting) {
@@ -40,7 +51,7 @@ export function RemoveClientAccess({
         return;
       }
 
-      setIsConfirming(false);
+      closeConfirmation();
       setSuccessMessage("Acesso removido com sucesso.");
       router.refresh();
     } catch {
@@ -53,6 +64,7 @@ export function RemoveClientAccess({
   return (
     <div>
       <button
+        ref={triggerRef}
         type="button"
         aria-label={`Remover acesso de ${fullName}`}
         aria-expanded={isConfirming}
@@ -71,6 +83,11 @@ export function RemoveClientAccess({
       {isConfirming ? (
         <div
           id={confirmationId}
+          role="group"
+          aria-label={`Confirmar remoção do acesso de ${fullName}`}
+          onKeyDown={(event) => {
+            if (event.key === "Escape" && !isSubmitting) closeConfirmation();
+          }}
           className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-4"
         >
           <p className="font-semibold text-amber-950">
@@ -86,13 +103,14 @@ export function RemoveClientAccess({
               disabled={isSubmitting}
               onClick={() => {
                 setError(null);
-                setIsConfirming(false);
+                closeConfirmation();
               }}
               className="min-h-10 rounded-lg border border-slate-300 bg-white px-3.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Cancelar
             </button>
             <button
+              ref={confirmRef}
               type="button"
               aria-label={`Confirmar remoção do acesso de ${fullName}`}
               disabled={isSubmitting}
