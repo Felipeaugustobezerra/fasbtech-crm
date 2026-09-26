@@ -7,6 +7,7 @@ const PAGE_HEIGHT = 841.89;
 const MARGIN = 56;
 const FONT_SIZE = 11;
 const LINE_HEIGHT = 16;
+const PARAGRAPH_GAP = 8;
 const CONTENT_WIDTH = PAGE_WIDTH - MARGIN * 2;
 
 function printableText(value: string, font: PDFFont) {
@@ -21,9 +22,9 @@ function printableText(value: string, font: PDFFont) {
 }
 
 function wrapLine(value: string, font: PDFFont) {
-  if (value.length === 0) return [""];
+  if (value.trim().length === 0) return [""];
 
-  const words = value.split(/\s+/u);
+  const words = value.trim().split(/\s+/u);
   const lines: string[] = [];
   let current = "";
 
@@ -35,8 +36,25 @@ function wrapLine(value: string, font: PDFFont) {
       continue;
     }
 
-    if (current) lines.push(current);
-    current = word;
+    if (current) {
+      lines.push(current);
+      current = "";
+    }
+
+    if (font.widthOfTextAtSize(word, FONT_SIZE) <= CONTENT_WIDTH) {
+      current = word;
+      continue;
+    }
+
+    for (const character of word) {
+      const next = current + character;
+      if (current && font.widthOfTextAtSize(next, FONT_SIZE) > CONTENT_WIDTH) {
+        lines.push(current);
+        current = character;
+      } else {
+        current = next;
+      }
+    }
   }
 
   if (current) lines.push(current);
@@ -48,12 +66,19 @@ export async function generateContractPdf(
 ): Promise<Uint8Array> {
   const document = await PDFDocument.create();
   const font = await document.embedFont(StandardFonts.Helvetica);
-  const content = printableText(snapshot.content, font);
-  const lines = content.split(/\r?\n/u).flatMap((line) => wrapLine(line, font));
+  const lines = snapshot.content
+    .replace(/\r\n?/gu, "\n")
+    .split("\n")
+    .flatMap((line) => wrapLine(printableText(line, font), font));
   let page = document.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
   let y = PAGE_HEIGHT - MARGIN;
 
   for (const line of lines) {
+    if (line === "") {
+      y -= LINE_HEIGHT + PARAGRAPH_GAP;
+      continue;
+    }
+
     if (y < MARGIN) {
       page = document.addPage([PAGE_WIDTH, PAGE_HEIGHT]);
       y = PAGE_HEIGHT - MARGIN;
